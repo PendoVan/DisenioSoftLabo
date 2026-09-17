@@ -69,6 +69,59 @@ namespace MiBotica.SolPedido.AccesoDatos.Core
             return usuario;
         }
 
+        public void InsertarUsuario(Usuario usuario)
+        {
+            using (SqlConnection conexion = new SqlConnection(ConfigurationManager.ConnectionStrings["SQL"].ConnectionString))
+            {
+                using (SqlCommand comando = new SqlCommand("paUsuarioInsertar", conexion))
+                {
+                    comando.CommandType = System.Data.CommandType.StoredProcedure;
 
+                    // Pasamos los parámetros al Procedimiento Almacenado
+                    comando.Parameters.AddWithValue("@CodUsuario", usuario.CodUsuario);
+                    comando.Parameters.AddWithValue("@Clave", usuario.Clave);
+                    comando.Parameters.AddWithValue("@Nombres", usuario.Nombres);
+
+                    conexion.Open();
+                    comando.ExecuteNonQuery(); // Ejecuta la inserción sin retornar filas
+                    conexion.Close();
+                }
+            }
+        }
+
+        public void ModificarUsuario(Usuario usuario)
+        {
+            using (SqlConnection conexion = new SqlConnection(ConfigurationManager.ConnectionStrings["SQL"].ConnectionString))
+            {
+                using (SqlCommand comando = new SqlCommand("paUsuarioModificar", conexion))
+                {
+                    comando.CommandType = System.Data.CommandType.StoredProcedure;
+                    comando.Parameters.AddWithValue("@IdUsuario", usuario.IdUsuario);
+                    comando.Parameters.AddWithValue("@CodUsuario", usuario.CodUsuario);
+                    comando.Parameters.AddWithValue("@Clave", usuario.Clave);
+                    comando.Parameters.AddWithValue("@Nombres", usuario.Nombres);
+
+                    conexion.Open();
+                    comando.ExecuteNonQuery();
+                    conexion.Close();
+                }
+            }
+        }
+
+        public void EliminarUsuario(int idUsuario)
+        {
+            using (SqlConnection conexion = new SqlConnection(ConfigurationManager.ConnectionStrings[ConfigurationManager.AppSettings["cnnSql"]].ConnectionString))
+            {
+                using (SqlCommand comando = new SqlCommand("paUsuarioEliminar", conexion))
+                {
+                    comando.CommandType = System.Data.CommandType.StoredProcedure;
+                    comando.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+                    conexion.Open();
+                    comando.ExecuteNonQuery();
+                    conexion.Close();
+                }
+            }
+        }
     }
 }

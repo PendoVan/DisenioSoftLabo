@@ -47,11 +47,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="Helpers\EncriptacionHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Binarios\" />
-    <Folder Include="Helpers\" />
     <Folder Include="Log\" />
   </ItemGroup>
   <ItemGroup>

@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using MiBotica.SolPedido.Entidades.Core;
 using MiBotica.SolPedido.LogicaNegocio.Core;
+using MiBotica.SolPedido.Utiles.Helpers;
 
 namespace MiBotica.SolPedido.Cliente.Web.Controllers
 {
@@ -28,17 +29,23 @@ namespace MiBotica.SolPedido.Cliente.Web.Controllers
         // GET: Usuario/Create
         public ActionResult Create()
         {
-            return View();
+            Usuario usuario = new Usuario();
+            return View(usuario);
         }
 
         // POST: Usuario/Create
         [HttpPost]
-        public ActionResult Create(FormCollection collection)
+        public ActionResult Create(Usuario usuario)
         {
             try
             {
-                // TODO: Add insert logic here
+                // 1. Ciframos el texto plano y lo asignamos a la propiedad binaria
+                usuario.Clave = EncriptacionHelper.EncriptarByte(usuario.ClaveTexto);
 
+                // 2. Invocamos a la capa de negocio para registrar (Nota: se creará en el paso siguiente)
+                new UsuarioLN().InsertarUsuario(usuario);
+
+                // 3. Si todo sale bien, redirige al listado
                 return RedirectToAction("Index");
             }
             catch
@@ -50,39 +57,45 @@ namespace MiBotica.SolPedido.Cliente.Web.Controllers
         // GET: Usuario/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            // Buscamos al usuario actual para cargar sus datos en el formulario
+            Usuario usuario = new UsuarioLN().ListaUsuarios().Find(x => x.IdUsuario == id);
+            return View(usuario);
         }
 
         // POST: Usuario/Edit/5
         [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
+        public ActionResult Edit(int id, Usuario usuario)
         {
             try
             {
-                // TODO: Add update logic here
+                usuario.IdUsuario = id;
+                // Encriptamos la nueva clave antes de actualizar
+                usuario.Clave = EncriptacionHelper.EncriptarByte(usuario.ClaveTexto);
 
+                new UsuarioLN().ModificarUsuario(usuario);
                 return RedirectToAction("Index");
             }
             catch
             {
-                return View();
+                return View(usuario);
             }
         }
 
         // GET: Usuario/Delete/5
         public ActionResult Delete(int id)
         {
-            return View();
+            // Buscamos el usuario para mostrar la pantalla de confirmación de borrado
+            Usuario usuario = new UsuarioLN().ListaUsuarios().Find(x => x.IdUsuario == id);
+            return View(usuario);
         }
 
         // POST: Usuario/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
+        [HttpPost, ActionName("Delete")]
+        public ActionResult DeleteConfirmed(int id)
         {
             try
             {
-                // TODO: Add delete logic here
-
+                new UsuarioLN().EliminarUsuario(id);
                 return RedirectToAction("Index");
             }
             catch
