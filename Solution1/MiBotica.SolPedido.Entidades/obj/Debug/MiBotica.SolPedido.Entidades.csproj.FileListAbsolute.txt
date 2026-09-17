@@ -1,0 +1,12 @@
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Entidades.dll
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Entidades.pdb
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Utiles.dll
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Utiles.pdb
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.csproj.AssemblyReference.cache
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.csproj.CoreCompileInputs.cache
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.AC7335A6.Up2Date
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.dll
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.pdb
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\log4net.dll
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\log4net.pdb
+C:\proyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\log4net.xml

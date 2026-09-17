@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Backend/">
+    <Project Path="MiBotica.SolPedido.AccesoDatos/MiBotica.SolPedido.AccesoDatos.csproj" Id="69638e99-398b-4a42-abb7-0afb9766671a" />
+    <Project Path="MiBotica.SolPedido.LogicaNegocio/MiBotica.SolPedido.LogicaNegocio.csproj" Id="f922e39d-c131-45e3-bb0f-37aaddffb2a1" />
+  </Folder>
+  <Folder Name="/FrontEnd/">
+    <Project Path="MiBotica.SolPedido.Cliente.Web/MiBotica.SolPedido.Cliente.Web.csproj" Id="357b13af-5b8e-4cbc-949f-c27f26bcc914" />
+  </Folder>
+  <Folder Name="/Tranvsersal/">
+    <Project Path="MiBotica.SolPedido.Entidades/MiBotica.SolPedido.Entidades.csproj" Id="6931a1f7-12ab-46fd-8fb1-e3359357b905" />
+    <Project Path="MiBotica.SolPedido.Utiles/MiBotica.SolPedido.Utiles.csproj" Id="0b75fdd8-6727-43dd-8f00-7554fc37fe02" />
+    <Project Path="MiBotica.SolPedido.UtilesWeb/MiBotica.SolPedido.UtilesWeb.csproj" Id="fdc71517-a7e0-44bc-b96b-77a7f2b060b6" />
+  </Folder>
+</Solution>
