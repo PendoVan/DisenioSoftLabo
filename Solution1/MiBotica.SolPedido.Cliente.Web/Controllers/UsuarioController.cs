@@ -69,14 +69,28 @@ namespace MiBotica.SolPedido.Cliente.Web.Controllers
             try
             {
                 usuario.IdUsuario = id;
-                // Encriptamos la nueva clave antes de actualizar
-                usuario.Clave = EncriptacionHelper.EncriptarByte(usuario.ClaveTexto);
+
+                // Si escribió clave, la encriptamos a byte[]
+                if (!string.IsNullOrEmpty(usuario.ClaveTexto))
+                {
+                    usuario.Clave = EncriptacionHelper.EncriptarByte(usuario.ClaveTexto);
+                }
+                else
+                {
+                    // Si NO escribió clave, traemos los bytes de la clave actual de la BD
+                    Usuario usuarioActual = new UsuarioLN().ListaUsuarios().Find(x => x.IdUsuario == id);
+                    if (usuarioActual != null)
+                    {
+                        usuario.Clave = usuarioActual.Clave;
+                    }
+                }
 
                 new UsuarioLN().ModificarUsuario(usuario);
                 return RedirectToAction("Index");
             }
-            catch
+            catch (Exception ex)
             {
+                ModelState.AddModelError("", ex.Message);
                 return View(usuario);
             }
         }

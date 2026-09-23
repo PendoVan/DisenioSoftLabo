@@ -1,0 +1,44 @@
+﻿@model MiBotica.SolPedido.Entidades.Core.Usuario
+
+@{
+    ViewBag.Title = "Edit";
+}
+
+<div class="box box-primary">
+    <div class="box-header with-border">
+        <h3 class="box-title">Editar Usuario</h3>
+    </div>
+
+    @using (Html.BeginForm())
+    {
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.IdUsuario)
+
+        <div class="box-body">
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.CodUsuario, new { @class = "control-label" })
+                @Html.EditorFor(model => model.CodUsuario, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.CodUsuario, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                @Html.LabelFor(model => model.Nombres, new { @class = "control-label" })
+                @Html.EditorFor(model => model.Nombres, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Nombres, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Nueva Clave (Opcional)</label>
+                @Html.PasswordFor(model => model.ClaveTexto, new { @class = "form-control", placeholder = "Dejar en blanco para mantener la clave actual" })
+                @Html.ValidationMessageFor(model => model.ClaveTexto, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="box-footer">
+            <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Guardar Cambios</button>
+            <a href="@Url.Action("Index", "Usuario")" class="btn btn-default">Cancelar</a>
+        </div>
+    }
+</div>

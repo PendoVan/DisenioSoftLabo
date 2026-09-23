@@ -51,7 +51,7 @@ namespace MiBotica.SolPedido.AccesoDatos.Core
             {
                 if (!Convert.IsDBNull(reader["Clave"]))
                 {
-                    // usuario.Clave  = reader["Clave"];
+                    usuario.Clave  = (byte[])reader["Clave"];
                 }
             }
             reader.GetSchemaTable().DefaultView.RowFilter = "ColumnName='CodUsuario'";
@@ -98,8 +98,12 @@ namespace MiBotica.SolPedido.AccesoDatos.Core
                     comando.CommandType = System.Data.CommandType.StoredProcedure;
                     comando.Parameters.AddWithValue("@IdUsuario", usuario.IdUsuario);
                     comando.Parameters.AddWithValue("@CodUsuario", usuario.CodUsuario);
-                    comando.Parameters.AddWithValue("@Clave", usuario.Clave);
                     comando.Parameters.AddWithValue("@Nombres", usuario.Nombres);
+
+                    // CORREGIDO: Se especifica SqlDbType.VarBinary para el parámetro @Clave
+                    SqlParameter pClave = new SqlParameter("@Clave", SqlDbType.VarBinary);
+                    pClave.Value = (object)usuario.Clave ?? DBNull.Value;
+                    comando.Parameters.Add(pClave);
 
                     conexion.Open();
                     comando.ExecuteNonQuery();
@@ -110,7 +114,7 @@ namespace MiBotica.SolPedido.AccesoDatos.Core
 
         public void EliminarUsuario(int idUsuario)
         {
-            using (SqlConnection conexion = new SqlConnection(ConfigurationManager.ConnectionStrings[ConfigurationManager.AppSettings["cnnSql"]].ConnectionString))
+            using (SqlConnection conexion = new SqlConnection(ConfigurationManager.ConnectionStrings["SQL"].ConnectionString))
             {
                 using (SqlCommand comando = new SqlCommand("paUsuarioEliminar", conexion))
                 {
