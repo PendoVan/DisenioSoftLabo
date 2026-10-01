@@ -3,12 +3,8 @@
   "WorkspaceRootPath": "C:\\proyectoClase\\Solution1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{357B13AF-5B8E-4CBC-949F-C27F26BCC914}|MiBotica.SolPedido.Cliente.Web\\MiBotica.SolPedido.Cliente.Web.csproj|c:\\proyectoclase\\solution1\\mibotica.solpedido.cliente.web\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{357B13AF-5B8E-4CBC-949F-C27F26BCC914}|MiBotica.SolPedido.Cliente.Web\\MiBotica.SolPedido.Cliente.Web.csproj|solutionrelative:mibotica.solpedido.cliente.web\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{357B13AF-5B8E-4CBC-949F-C27F26BCC914}|MiBotica.SolPedido.Cliente.Web\\MiBotica.SolPedido.Cliente.Web.csproj|c:\\proyectoclase\\solution1\\mibotica.solpedido.cliente.web\\content\\bower_components\\fullcalendar\\dist\\fullcalendar.d.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}",
-      "RelativeMoniker": "D:0:0:{357B13AF-5B8E-4CBC-949F-C27F26BCC914}|MiBotica.SolPedido.Cliente.Web\\MiBotica.SolPedido.Cliente.Web.csproj|solutionrelative:mibotica.solpedido.cliente.web\\content\\bower_components\\fullcalendar\\dist\\fullcalendar.d.ts||{0F2454B1-A556-402D-A7D0-1FDE7F99DEE0}"
+      "AbsoluteMoniker": "D:0:0:{F922E39D-C131-45E3-BB0F-37AADDFFB2A1}|MiBotica.SolPedido.LogicaNegocio\\MiBotica.SolPedido.LogicaNegocio.csproj|c:\\proyectoclase\\solution1\\mibotica.solpedido.logicanegocio\\core\\usuarioln.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{F922E39D-C131-45E3-BB0F-37AADDFFB2A1}|MiBotica.SolPedido.LogicaNegocio\\MiBotica.SolPedido.LogicaNegocio.csproj|solutionrelative:mibotica.solpedido.logicanegocio\\core\\usuarioln.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -18,32 +14,19 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "fullcalendar.d.ts",
-              "DocumentMoniker": "C:\\proyectoClase\\Solution1\\MiBotica.SolPedido.Cliente.Web\\Content\\bower_components\\fullcalendar\\dist\\fullcalendar.d.ts",
-              "RelativeDocumentMoniker": "MiBotica.SolPedido.Cliente.Web\\Content\\bower_components\\fullcalendar\\dist\\fullcalendar.d.ts",
-              "ToolTip": "C:\\proyectoClase\\Solution1\\MiBotica.SolPedido.Cliente.Web\\Content\\bower_components\\fullcalendar\\dist\\fullcalendar.d.ts",
-              "RelativeToolTip": "MiBotica.SolPedido.Cliente.Web\\Content\\bower_components\\fullcalendar\\dist\\fullcalendar.d.ts",
-              "ViewState": "AgIAADYKAAAAAAAAAAAAADYKAAACAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003213|",
-              "WhenOpened": "2026-09-24T00:06:46.85Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "_Layout.cshtml",
-              "DocumentMoniker": "C:\\proyectoClase\\Solution1\\MiBotica.SolPedido.Cliente.Web\\Views\\Shared\\_Layout.cshtml",
-              "RelativeDocumentMoniker": "MiBotica.SolPedido.Cliente.Web\\Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "C:\\proyectoClase\\Solution1\\MiBotica.SolPedido.Cliente.Web\\Views\\Shared\\_Layout.cshtml",
-              "RelativeToolTip": "MiBotica.SolPedido.Cliente.Web\\Views\\Shared\\_Layout.cshtml",
-              "ViewState": "AgIAAEkDAAAAAAAAAAAmwFoDAABRAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-09-23T23:46:37.457Z",
+              "Title": "UsuarioLN.cs",
+              "DocumentMoniker": "C:\\proyectoClase\\Solution1\\MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
+              "RelativeDocumentMoniker": "MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
+              "ToolTip": "C:\\proyectoClase\\Solution1\\MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
+              "RelativeToolTip": "MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
+              "ViewState": "AgIAAA4AAAAAAAAAAAA2wBkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-09-25T21:57:44.335Z",
               "EditorCaption": ""
             }
           ]

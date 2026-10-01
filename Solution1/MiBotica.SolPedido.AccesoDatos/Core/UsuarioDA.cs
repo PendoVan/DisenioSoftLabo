@@ -127,5 +127,25 @@ namespace MiBotica.SolPedido.AccesoDatos.Core
                 }
             }
         }
+
+        public Usuario ObtenerUsuario(int id)
+        {
+            Usuario entidad = null;
+            using (SqlConnection conexion = new SqlConnection(ConfigurationManager.ConnectionStrings["SQL"].ConnectionString))
+            {
+                using (SqlCommand comando = new SqlCommand("paUsuario_ObtenerPorId", conexion))
+                {
+                    comando.CommandType = System.Data.CommandType.StoredProcedure;
+                    comando.Parameters.AddWithValue("@IdUsuario", id);
+                    conexion.Open();
+                    SqlDataReader reader = comando.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        entidad = LlenarEntidad(reader);
+                    }
+                }
+            }
+            return entidad;
+        }
     }
 }

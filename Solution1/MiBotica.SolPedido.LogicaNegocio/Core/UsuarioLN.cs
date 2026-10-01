@@ -60,5 +60,18 @@ namespace MiBotica.SolPedido.LogicaNegocio.Core
             }
         }
 
+        public Usuario ObtenerUsuario(int id)
+        {
+            try
+            {
+                return new UsuarioDA().ObtenerUsuario(id);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex); // Aprovechando la configuración de log4net
+                throw;
+            }
+        }
+
     }
 }

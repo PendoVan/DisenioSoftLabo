@@ -23,7 +23,15 @@ namespace MiBotica.SolPedido.Cliente.Web.Controllers
         // GET: Usuario/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            // Llama a la capa de negocio para obtener los datos exactos del ID
+            Usuario usuario = new UsuarioLN().ObtenerUsuario(id);
+
+            if (usuario == null)
+            {
+                return HttpNotFound("No se encontró esa vaina.");
+            }
+
+            return View(usuario);
         }
 
         // GET: Usuario/Create
