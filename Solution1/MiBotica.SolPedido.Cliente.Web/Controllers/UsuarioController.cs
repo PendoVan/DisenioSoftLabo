@@ -6,10 +6,11 @@ using System.Web.Mvc;
 using MiBotica.SolPedido.Entidades.Core;
 using MiBotica.SolPedido.LogicaNegocio.Core;
 using MiBotica.SolPedido.Utiles.Helpers;
+using MiBotica.SolPedido.Entidades.Base;
 
 namespace MiBotica.SolPedido.Cliente.Web.Controllers
 {
-    public class UsuarioController : Controller
+    public class UsuarioController : BaseLN
     {
         // GET: Usuario
         public ActionResult Index()

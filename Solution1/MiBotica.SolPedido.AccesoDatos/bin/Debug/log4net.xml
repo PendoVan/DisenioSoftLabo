@@ -407,6 +407,12 @@
             </para>
             </remarks>
         </member>
+        <member name="F:log4net.Appender.AdoNetAppender._eventFailed">
+            <summary>
+            Set by the contained per-event failure path in <see cref="M:log4net.Appender.AdoNetAppender.SendBuffer(System.Data.IDbTransaction,log4net.Core.LoggingEvent[])"/>,
+            which reports rather than throws, so <see cref="M:log4net.Appender.AdoNetAppender.SendBufferPerEvent(log4net.Core.LoggingEvent[])"/> can count failures.
+            </summary>
+        </member>
         <member name="M:log4net.Appender.AdoNetAppender.Prepare(System.Data.IDbCommand)">
             <summary>
             Prepare entire database command object to be executed.
@@ -474,22 +480,6 @@
             <summary>
             Connects to the database.
             </summary>    
-        </member>
-        <member name="M:log4net.Appender.AdoNetAppender.RedactConnectionString(System.String)">
-            <summary>
-            Replaces the values of password-bearing keywords in a connection string with
-            <see cref="F:log4net.Appender.AdoNetAppender.RedactedValue"/>, so that it can be named in a diagnostic message.
-            </summary>
-            <param name="connectionString">The connection string to redact.</param>
-            <returns>
-            The connection string with every password value replaced, or <see cref="F:log4net.Appender.AdoNetAppender.RedactedValue"/> if it
-            could not be parsed.
-            </returns>
-        </member>
-        <member name="F:log4net.Appender.AdoNetAppender.RedactedValue">
-            <summary>
-            Stands in for a password in diagnostic messages.
-            </summary>
         </member>
         <member name="M:log4net.Appender.AdoNetAppender.DisposeConnection">
             <summary>
@@ -895,6 +885,11 @@
             The format of the output will depend on the appender layout.
             </para>
             </remarks>
+        </member>
+        <member name="M:log4net.Appender.AnsiColorTerminalAppender.TrailingLineBreakLength(System.String)">
+            <summary>
+            How many characters of line break the message ends with, 0, 1 or 2.
+            </summary>
         </member>
         <member name="P:log4net.Appender.AnsiColorTerminalAppender.RequiresLayout">
             <summary>
@@ -1808,6 +1803,9 @@
             <see cref="M:System.Web.TraceContext.Warn(System.String)"/> method depending on the level of the logging event.
             The event's logger name is the default value for the category parameter of the Write/Warn method. 
             </para>
+            <para>
+            Writes to the request current on the appending thread, so it must not be wrapped in a buffering appender.
+            </para>
             </remarks>
             <author>Nicko Cadell</author>
             <author>Gert Driesen</author>
@@ -2007,8 +2005,13 @@
             <summary>
             Flushes any buffered log data.
             </summary>
-            <param name="millisecondsTimeout">The maximum time to wait for logging events to be flushed.</param>
-            <returns><see langword="true"/> if all logging events were flushed successfully, else <see langword="false"/>.</returns>
+            <param name="millisecondsTimeout">
+            Unused: the buffer is sent on the calling thread, so there is nothing to wait for.
+            </param>
+            <returns>
+            <see langword="false"/> when events are still buffered afterwards, which is what a
+            <see cref="P:log4net.Appender.BufferingAppenderSkeleton.Lossy"/> appender does: it keeps them until a triggering event arrives.
+            </returns>
         </member>
         <member name="M:log4net.Appender.BufferingAppenderSkeleton.Flush">
             <summary>
@@ -2869,6 +2872,32 @@
             </para>
             </remarks>
         </member>
+        <member name="M:log4net.Appender.EventLogAppender.PrepareEventText(System.String,System.Int32)">
+            <summary>
+            Escapes the NUL characters and then applies the message size limit.
+            </summary>
+            <param name="rendered">The rendered event.</param>
+            <param name="maxSize">The largest message the event log accepts.</param>
+            <returns>The text to write.</returns>
+            <remarks>
+            <para>
+            The order matters. <c>ReportEventW</c> takes a null terminated string, so a NUL in content
+            ends the stored record there, and escaping doubles each NUL, so escaping after the limit was
+            applied could push the message back over it.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Appender.EventLogAppender.GetMaxMessageSize">
+            <summary>
+            The largest message this appender may hand to the event log.
+            </summary>
+            <returns>What is left of the record budget once the names are spent from it.</returns>
+            <remarks>
+            Computed, not a constant: <see cref="P:log4net.Appender.EventLogAppender.ApplicationName"/> defaults to the app domain name, so
+            the consumer's assembly name comes out of the budget. The machine name is subtracted on the
+            assumption that it counts, which cannot be tested without renaming a machine.
+            </remarks>
+        </member>
         <member name="P:log4net.Appender.EventLogAppender.RequiresLayout">
             <summary>
             This appender requires a <see cref="N:log4net.Layout"/> to be set.
@@ -2918,68 +2947,21 @@
             log message.
             </remarks>
         </member>
-        <member name="F:log4net.Appender.EventLogAppender.MaxEventlogMessageSizeDefault">
+        <member name="F:log4net.Appender.EventLogAppender.MaxEventlogMessageSize">
             <summary>
-            The maximum size supported by default.
+            The maximum size the operating system supports for an event log message.
             </summary>
             <remarks>
-            http://msdn.microsoft.com/en-us/library/xzwc042w(v=vs.100).aspx
-            The 32766 documented max size is two bytes shy of 32K (I'm assuming 32766 
-            may leave space for a two byte null terminator of #0#0). The 32766 max 
-            length is what the .NET 4.0 source code checks for, but this is WRONG! 
-            Strings with a length > 31839 on Windows Vista or higher can CORRUPT 
-            the event log! See: System.Diagnostics.EventLogInternal.InternalWriteEvent() 
-            for the use of the 32766 max size.
+            Measured on Windows 11 build 26200: a record is stored while message plus log name plus
+            source stays within this, and one character more stores nothing. The 32766 that .NET itself
+            checks for is wrong and corrupts the log.
             </remarks>
         </member>
-        <member name="F:log4net.Appender.EventLogAppender.MaxEventlogMessageSizeVistaOrNewer">
+        <member name="F:log4net.Appender.EventLogAppender.MaxEventlogMessageSizeMargin">
             <summary>
-            The maximum size supported by a windows operating system that is vista
-            or newer.
+            Held back from the computed limit. Crossing it discards the record silently, consumes the
+            log's space anyway, and has been seen to leave the log unreadable.
             </summary>
-            <remarks>
-            See ReportEvent API:
-               http://msdn.microsoft.com/en-us/library/aa363679(VS.85).aspx
-            ReportEvent's lpStrings parameter:
-            "A pointer to a buffer containing an array of 
-            null-terminated strings that are merged into the message before Event Viewer 
-            displays the string to the user. This parameter must be a valid pointer 
-            (or NULL), even if wNumStrings is zero. Each string is limited to 31,839 characters."
-            
-            Going beyond the size of 31839 will (at some point) corrupt the event log on Windows
-            Vista or higher! It may succeed for a while...but you will eventually run into the
-            error: "System.ComponentModel.Win32Exception : A device attached to the system is
-            not functioning", and the event log will then be corrupt (I was able to corrupt 
-            an event log using a length of 31877 on Windows 7).
-            
-            The max size for Windows Vista or higher is documented here:
-               http://msdn.microsoft.com/en-us/library/xzwc042w(v=vs.100).aspx.
-            Going over this size may succeed a few times but the buffer will overrun and 
-            eventually corrupt the log (based on testing).
-            
-            The maxEventMsgSize size is based on the max buffer size of the lpStrings parameter of the ReportEvent API.
-            The documented max size for EventLog.WriteEntry for Windows Vista and higher is 31839, but I'm leaving room for a
-            terminator of #0#0, as we cannot see the source of ReportEvent (though we could use an API monitor to examine the
-            buffer, given enough time).
-            </remarks>
-        </member>
-        <member name="F:log4net.Appender.EventLogAppender._maxEventlogMessageSize">
-            <summary>
-            The maximum size that the operating system supports for
-            a event log message.
-            </summary>
-            <remarks>
-            Used to determine the maximum string length that can be written
-            to the operating system event log and eventually truncate a string
-            that exceeds the limits.
-            </remarks>
-        </member>
-        <member name="M:log4net.Appender.EventLogAppender.GetMaxEventLogMessageSize">
-            <summary>
-            This method determines the maximum event log message size allowed for
-            the current environment.
-            </summary>
-            <returns></returns>
         </member>
         <member name="T:log4net.Appender.FileAppender">
             <summary>
@@ -3680,6 +3662,14 @@
             </para>
             </remarks>
         </member>
+        <member name="M:log4net.Appender.FileAppender.RunWithBestEffortLock(System.Action)">
+            <summary>
+            Runs <paramref name="action"/> under the file lock if it can be taken, releasing only what it
+            took. It runs unlocked too, because closing has to happen: that is what frees the handle.
+            <see cref="M:log4net.Appender.FileAppender.Append(log4net.Core.LoggingEvent)"/> and <see cref="M:log4net.Appender.FileAppender.WriteHeader"/> deliberately skip their work
+            instead when the lock is refused, so they keep their own acquire.
+            </summary>
+        </member>
         <member name="M:log4net.Appender.FileAppender.OpenFile(System.String,System.Boolean)">
             <summary>
             Sets and <i>opens</i> the file where the log output will go. The specified file must be writable.
@@ -3741,6 +3731,29 @@
             directory.
             </para>
             </remarks>
+        </member>
+        <member name="M:log4net.Appender.FileAppender.MutexNameForPath(System.String,System.String)">
+            <summary>
+            Names the mutex that serialises <paramref name="path"/> between processes, with
+            <paramref name="suffix"/> telling one mutex over the same file from another.
+            </summary>
+            <remarks>
+            The flattened path, as earlier versions computed it. Only a name the platform rejects is
+            hashed: Unix stops at <see cref="F:log4net.Appender.FileAppender.MaxMutexNameBytes"/>, Windows has no limit. Unprefixed, so
+            on Windows it coordinates one session.
+            <para>
+            The suffix can collide, since it is only appended: the lock for <c>/var/log/app_rolling</c> and
+            the rolling lock for <c>/var/log/app</c> name one mutex. Two unrelated files then contend on
+            it, which costs waiting, not a lost lock or a lost file, and the alternative is renaming every
+            mutex and losing exclusion against older versions everywhere.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Appender.FileAppender.MutexNameForPath(System.String,System.String,System.Nullable{System.Int32})">
+            <summary>Takes the limit rather than deciding it, so both branches are testable anywhere.</summary>
+        </member>
+        <member name="F:log4net.Appender.FileAppender.MaxMutexNameBytes">
+            <summary>The longest mutex name Unix accepts, in UTF-8 bytes. Windows has no limit. Measured.</summary>
         </member>
         <member name="F:log4net.Appender.FileAppender._fileName">
             <summary>
@@ -3999,6 +4012,36 @@
             </remarks>
             <param name="millisecondsTimeout">The maximum time to wait for logging events to be flushed.</param>
             <returns><see langword="true"/> if all logging events were flushed successfully, else <see langword="false"/>.</returns>
+        </member>
+        <member name="T:log4net.Appender.Internal.ContentEscape">
+            <summary>
+            Makes rendered content safe for a sink, without discarding any of it.
+            </summary>
+        </member>
+        <member name="M:log4net.Appender.Internal.ContentEscape.EscapeNulCharacters(System.String)">
+            <summary>
+            Replaces NUL characters with a visible <c>\0</c> escape.
+            </summary>
+            <param name="message">The rendered message.</param>
+            <returns>The message with every NUL character escaped.</returns>
+            <remarks>
+            <para>
+            A NUL ends the string for the native sink, dropping everything the layout rendered after it,
+            trailing fields and exception text included. Logged content is not trusted and may well
+            contain a NUL, so the character is escaped rather than passed through.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Appender.Internal.ContentEscape.EscapeUnpairedSurrogates(System.String)">
+            <summary>
+            Replaces the surrogates that are not part of a pair with a visible <c>\uXXXX</c> escape.
+            </summary>
+            <param name="message">The rendered message.</param>
+            <returns>The message with every unpaired surrogate escaped.</returns>
+            <remarks>
+            An unpaired surrogate is a legal <see cref="T:System.String"/> but cannot be encoded, and an encoder
+            that throws costs the whole event, so it is escaped rather than left to fail.
+            </remarks>
         </member>
         <member name="T:log4net.Appender.Internal.IUdpConnection">
             <summary>
@@ -4328,24 +4371,37 @@
             </para>
             </remarks>
         </member>
-        <member name="M:log4net.Appender.LocalSyslogAppender.EscapeNulCharacters(System.String)">
+        <member name="M:log4net.Appender.LocalSyslogAppender.EscapePercent(System.String)">
             <summary>
-            Replaces NUL characters with a visible <c>\0</c> escape.
+            Doubles every <c>%</c>, so that the record libc takes as a printf format string renders as
+            the text the layout produced.
             </summary>
             <param name="message">The rendered message.</param>
-            <returns>The message with every NUL character escaped.</returns>
+            <returns>The message with every percent sign escaped.</returns>
+        </member>
+        <member name="P:log4net.Appender.LocalSyslogAppender.NewLineHandling">
+            <summary>
+            What to do with the newlines in logged content. Defaults to
+            <see cref="F:log4net.Appender.SyslogNewLineHandling.Escape"/>.
+            </summary>
             <remarks>
-            <para>
-            The message is marshaled to libc as a null-terminated string, so a NUL character anywhere in
-            it would end the record there and silently drop everything the layout rendered after it,
-            including trailing fields and exception text. Logged content is not trusted and may well
-            contain a NUL, so the character is escaped rather than passed through.
-            </para>
-            <para>
-            Other control characters are left alone: <c>syslog(3)</c> encodes them itself, and newlines
-            are needed for the multi-line output an exception layout produces.
-            </para>
+            A newline in content ends the record for daemons that write the message through to a line
+            oriented log, letting content forge a second, authentic looking entry.
             </remarks>
+        </member>
+        <member name="M:log4net.Appender.LocalSyslogAppender.EscapeNewLines(System.String)">
+            <summary>
+            Replaces the newlines with a visible <c>\r</c> or <c>\n</c> escape.
+            </summary>
+            <param name="message">The rendered message.</param>
+            <returns>The message with every newline escaped.</returns>
+        </member>
+        <member name="M:log4net.Appender.LocalSyslogAppender.SplitLines(System.String)">
+            <summary>
+            Splits the message into the lines to send as separate records, dropping the empty ones.
+            </summary>
+            <param name="message">The rendered message.</param>
+            <returns>One entry per non-empty line.</returns>
         </member>
         <member name="M:log4net.Appender.LocalSyslogAppender.OnClose">
             <summary>
@@ -4877,26 +4933,6 @@
             reserved for local use
             </summary>
         </member>
-        <member name="T:log4net.Appender.RemoteSyslogAppender.SyslogNewLineHandling">
-            <summary>
-            Options for handling newlines (\r or \n) in <see ref="AppendMessage" />
-            </summary>
-        </member>
-        <member name="F:log4net.Appender.RemoteSyslogAppender.SyslogNewLineHandling.Escape">
-            <summary>
-            escape the newlines (\\r for \r and \\n for \n)
-            </summary>
-        </member>
-        <member name="F:log4net.Appender.RemoteSyslogAppender.SyslogNewLineHandling.Split">
-            <summary>
-            split the message at new lines
-            </summary>
-        </member>
-        <member name="F:log4net.Appender.RemoteSyslogAppender.SyslogNewLineHandling.Keep">
-            <summary>
-            keep newlines as is (many syslog servers can handle newlines in the message part)
-            </summary>
-        </member>
         <member name="M:log4net.Appender.RemoteSyslogAppender.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:log4net.Appender.RemoteSyslogAppender" /> class.
@@ -4933,7 +4969,7 @@
             <summary>
             NewLine handling
             </summary>
-            <remarks>The default value is <see cref="F:log4net.Appender.RemoteSyslogAppender.SyslogNewLineHandling.Escape"/>.</remarks>
+            <remarks>The default value is <see cref="F:log4net.Appender.SyslogNewLineHandling.Escape"/>.</remarks>
         </member>
         <member name="M:log4net.Appender.RemoteSyslogAppender.CreateUdpConnection">
             <summary>
@@ -5007,6 +5043,18 @@
             </para>
             </remarks>
         </member>
+        <member name="P:log4net.Appender.RemoteSyslogAppender.SendQueueSize">
+            <summary>
+            How many datagrams may wait to be sent. Defaults to 500.
+            </summary>
+            <exception cref="T:System.ArgumentOutOfRangeException">The value specified is not positive.</exception>
+        </member>
+        <member name="P:log4net.Appender.RemoteSyslogAppender.EnqueueTimeoutMillis">
+            <summary>
+            How long a logging call waits for room in a full queue. Defaults to 5000, 0 never waits.
+            </summary>
+            <exception cref="T:System.ArgumentOutOfRangeException">The value specified is negative.</exception>
+        </member>
         <member name="M:log4net.Appender.RemoteSyslogAppender.GetSeverity(log4net.Core.Level)">
             <summary>
             Translates a log4net level to a syslog severity.
@@ -5054,8 +5102,22 @@
             </para>
             </remarks>
         </member>
+        <member name="M:log4net.Appender.RemoteSyslogAppender.Flush(System.Int32)">
+            <summary>
+            Waits until everything queued so far has been sent.
+            </summary>
+            <param name="millisecondsTimeout">The maximum time to wait.</param>
+            <returns><see langword="false"/> on timeout, or when the sender is no longer running.</returns>
+        </member>
         <member name="M:log4net.Appender.RemoteSyslogAppender.OnClose">
             <inheritdoc/>
+        </member>
+        <member name="M:log4net.Appender.RemoteSyslogAppender.InitializeClientConnection">
+            <inheritdoc/>
+            <remarks>
+            Deliberately empty: this appender sends through the connection its pump owns, so the
+            inherited client would be a second socket that nothing ever uses.
+            </remarks>
         </member>
         <member name="T:log4net.Appender.RollingFileAppender">
             <summary>
@@ -5140,6 +5202,41 @@
             <author>Aspi Havewala</author>
             <author>Douglas de la Torre</author>
             <author>Edward Smit</author>
+        </member>
+        <member name="T:log4net.Appender.RollingFileAppender.PendingRename">
+            <summary>A base rename that failed, kept whole so its parts cannot drift apart.</summary>
+            <param name="From">The file that could not be moved.</param>
+            <param name="To">Where it was heading.</param>
+            <param name="WasBackupCountReverted">
+            Whether the caller undid a <see cref="P:log4net.Appender.RollingFileAppender.CurrentSizeRollBackups"/> increment, which a successful
+            retry has to put back. The time roll does not touch the counter, the size roll does.
+            </param>
+            <param name="RetryAtCount">The size the file must reach before the rename is attempted again.</param>
+        </member>
+        <member name="M:log4net.Appender.RollingFileAppender.PendingRename.#ctor(System.String,System.String,System.Boolean,System.Int64)">
+            <summary>A base rename that failed, kept whole so its parts cannot drift apart.</summary>
+            <param name="From">The file that could not be moved.</param>
+            <param name="To">Where it was heading.</param>
+            <param name="WasBackupCountReverted">
+            Whether the caller undid a <see cref="P:log4net.Appender.RollingFileAppender.CurrentSizeRollBackups"/> increment, which a successful
+            retry has to put back. The time roll does not touch the counter, the size roll does.
+            </param>
+            <param name="RetryAtCount">The size the file must reach before the rename is attempted again.</param>
+        </member>
+        <member name="P:log4net.Appender.RollingFileAppender.PendingRename.From">
+            <summary>The file that could not be moved.</summary>
+        </member>
+        <member name="P:log4net.Appender.RollingFileAppender.PendingRename.To">
+            <summary>Where it was heading.</summary>
+        </member>
+        <member name="P:log4net.Appender.RollingFileAppender.PendingRename.WasBackupCountReverted">
+            <summary>
+            Whether the caller undid a <see cref="P:log4net.Appender.RollingFileAppender.CurrentSizeRollBackups"/> increment, which a successful
+            retry has to put back. The time roll does not touch the counter, the size roll does.
+            </summary>
+        </member>
+        <member name="P:log4net.Appender.RollingFileAppender.PendingRename.RetryAtCount">
+            <summary>The size the file must reach before the rename is attempted again.</summary>
         </member>
         <member name="T:log4net.Appender.RollingFileAppender.RollingMode">
             <summary>
@@ -5444,6 +5541,14 @@
             </remarks>
             <param name="writer">the writer to set</param>
         </member>
+        <member name="P:log4net.Appender.RollingFileAppender.CountingWriter">
+            <summary>The writer, which counts what it has written so a size roll can be timed.</summary>
+            <remarks>
+            Only for the paths reached through <see cref="M:log4net.Appender.RollingFileAppender.Append(log4net.Core.LoggingEvent)"/>, where
+            <see cref="M:log4net.Appender.TextWriterAppender.PreAppendCheck"/> has already refused a null writer. A reopen
+            that could not take the lock leaves none, so the sites that run after one keep their own check.
+            </remarks>
+        </member>
         <member name="M:log4net.Appender.RollingFileAppender.Append(log4net.Core.LoggingEvent)">
             <summary>
             Write out a logging event.
@@ -5696,6 +5801,28 @@
             </para>
             </remarks>
         </member>
+        <member name="M:log4net.Appender.RollingFileAppender.RecordFailedBaseRename(System.String,System.String,System.Boolean)">
+            <summary>Remembers the base rename to retry, without touching the archive again.</summary>
+        </member>
+        <member name="M:log4net.Appender.RollingFileAppender.ScheduleRollRetry">
+            <summary>
+            Schedules the next attempt at the failed base rename, a
+            <see cref="F:log4net.Appender.RollingFileAppender.RetryGrowthDivisor">tenth</see> of <see cref="P:log4net.Appender.RollingFileAppender.MaxFileSize"/> of growth away.
+            </summary>
+        </member>
+        <member name="M:log4net.Appender.RollingFileAppender.RetryFailedRoll">
+            <summary>
+            Retries only the base rename, never the archive shift, so the backups are not rotated twice.
+            When the shift succeeded the target slot is still free. When it failed too, the target may be
+            occupied and <see cref="M:log4net.Appender.RollingFileAppender.RollFile(System.String,System.String)"/> deletes it, which is what that call has always done.
+            </summary>
+        </member>
+        <member name="M:log4net.Appender.RollingFileAppender.ShouldAppendAfterFailedRoll">
+            <summary>Whether a rename failed and left the file, so it must be appended to.</summary>
+        </member>
+        <member name="M:log4net.Appender.RollingFileAppender.TryRollFile(System.String,System.String)">
+            <summary>Renames as <see cref="M:log4net.Appender.RollingFileAppender.RollFile(System.String,System.String)"/> does, reporting whether it worked.</summary>
+        </member>
         <member name="M:log4net.Appender.RollingFileAppender.RollOverRenameFiles(System.String)">
             <summary>
             Implements file roll.
@@ -5779,6 +5906,24 @@
             <summary>
             Cache flag set if we are rolling by date.
             </summary>
+        </member>
+        <member name="F:log4net.Appender.RollingFileAppender._pendingRename">
+            <summary>
+            The base rename waiting to be retried, or null when none is. A
+            <see cref="M:log4net.Appender.RollingFileAppender.RollOverRenameFiles(System.String)"/> override that renames itself bypasses it.
+            </summary>
+        </member>
+        <member name="F:log4net.Appender.RollingFileAppender.RetryGrowthDivisor">
+            <summary>
+            The share of <see cref="P:log4net.Appender.RollingFileAppender.MaxFileSize"/> the file grows between retries: soon enough to recover
+            from a transient block, rare enough not to attempt the rename on every event.
+            </summary>
+        </member>
+        <member name="P:log4net.Appender.RollingFileAppender.RetryGrowth">
+            <summary>How far the file grows between attempts at a failed rename, at least one byte.</summary>
+        </member>
+        <member name="F:log4net.Appender.RollingFileAppender._rollFailures">
+            <summary>How many renames have failed, so one call can be told apart.</summary>
         </member>
         <member name="F:log4net.Appender.RollingFileAppender._rollSize">
             <summary>
@@ -6090,6 +6235,16 @@
             This appender requires a <see cref="N:log4net.Layout"/> to be set.
             </summary>
         </member>
+        <member name="P:log4net.Appender.SmtpAppender.SendTimeoutMillis">
+            <summary>
+            How long one send may take before it is abandoned. Defaults to 15000.
+            </summary>
+            <remarks>
+            The mail goes out under the appender lock, and <see cref="T:System.Net.Mail.SmtpClient"/>
+            waits 100 seconds by default. There is no "wait forever" value: 0 means "do not wait".
+            </remarks>
+            <exception cref="T:System.ArgumentOutOfRangeException">The value specified is not positive.</exception>
+        </member>
         <member name="M:log4net.Appender.SmtpAppender.SendEmail(System.String)">
             <summary>
             Send the email message
@@ -6253,6 +6408,33 @@
             </para>
             </remarks>
         </member>
+        <member name="T:log4net.Appender.SyslogNewLineHandling">
+            <summary>
+            Options for handling the newlines (\r or \n) in logged content, used by
+            <see cref="T:log4net.Appender.LocalSyslogAppender"/> and <see cref="T:log4net.Appender.RemoteSyslogAppender"/>.
+            </summary>
+            <remarks>
+            <para>
+            A newline ends the record for a syslog daemon that writes the message through to a line
+            oriented log, so content could otherwise forge a second, authentic looking entry.
+            </para>
+            </remarks>
+        </member>
+        <member name="F:log4net.Appender.SyslogNewLineHandling.Escape">
+            <summary>
+            escape the newlines (\\r for \r and \\n for \n)
+            </summary>
+        </member>
+        <member name="F:log4net.Appender.SyslogNewLineHandling.Split">
+            <summary>
+            split the message at new lines
+            </summary>
+        </member>
+        <member name="F:log4net.Appender.SyslogNewLineHandling.Keep">
+            <summary>
+            keep newlines as is (many syslog servers can handle newlines in the message part)
+            </summary>
+        </member>
         <member name="T:log4net.Appender.TelnetAppender">
             <summary>
             Appender that allows clients to connect via Telnet to receive log messages
@@ -6261,10 +6443,11 @@
             <para>
             The TelnetAppender accepts socket connections and streams logging messages back to the client.
             The output is provided in a telnet-friendly way so that a log can be monitored over a TCP/IP socket.
-            This allows simple remote monitoring of application logging.
             </para>
             <para>
-            The default <see cref="P:log4net.Appender.TelnetAppender.Port"/> is 23 (the telnet port).
+            The default <see cref="P:log4net.Appender.TelnetAppender.Port"/> is 23 (the telnet port) and the default
+            <see cref="P:log4net.Appender.TelnetAppender.ListenAddress"/> is <see cref="F:System.Net.IPAddress.Loopback"/>, so monitoring from another
+            machine has to be turned on deliberately.
             </para>
             <para>
             This appender is a diagnostic tool for trusted networks. As with any other appender
@@ -6277,19 +6460,46 @@
             <author>Keith Long</author>
             <author>Nicko Cadell</author>
         </member>
+        <member name="P:log4net.Appender.TelnetAppender.SendQueueSize">
+            <summary>
+            Gets or sets how many rendered events may wait to be written to the clients.
+            </summary>
+            <value>A positive number of events. The default is 500.</value>
+            <remarks>
+            <para>
+            Clients are written to from a background thread, so that a client which stops reading cannot
+            hold up the threads that log. Events queue up while that thread works, and are dropped once
+            the queue is full, which costs the telnet stream but never the log.
+            </para>
+            </remarks>
+            <exception cref="T:System.ArgumentOutOfRangeException">The value specified is not positive.</exception>
+        </member>
+        <member name="P:log4net.Appender.TelnetAppender.EnqueueTimeoutMillis">
+            <summary>
+            Gets or sets how long, in milliseconds, a logging call may wait for room in the send queue.
+            </summary>
+            <value>A number of milliseconds, or 0 to drop immediately. The default is 50.</value>
+            <remarks>
+            <para>
+            This is the only delay a connected client can impose on the application. While the queue
+            stays full it caps logging at 20 events per second; 0 drops immediately instead of waiting.
+            </para>
+            </remarks>
+            <exception cref="T:System.ArgumentOutOfRangeException">The value specified is negative.</exception>
+        </member>
         <member name="P:log4net.Appender.TelnetAppender.ListenAddress">
             <summary>
             Gets or sets the address to listen on.
             </summary>
             <value>
-            The local address to accept connections on. The default is <see cref="F:System.Net.IPAddress.Any"/>, every
-            interface of the machine.
+            The local address to accept connections on. The default is <see cref="F:System.Net.IPAddress.Loopback"/>,
+            the machine the application runs on.
             </value>
             <remarks>
             <para>
-            Set this to <see cref="F:System.Net.IPAddress.Loopback"/> to accept connections only from the machine the
-            application runs on, which is what the diagnostic use this appender is meant for usually
-            needs.
+            The stream is unauthenticated and unencrypted, so reaching it from another machine is opt-in:
+            set this to <see cref="F:System.Net.IPAddress.Any"/> or <see cref="F:System.Net.IPAddress.IPv6Any"/> for that, and keep
+            untrusted parties away from the port.
             </para>
             </remarks>
             <exception cref="T:System.ArgumentNullException">The value specified is <see langword="null"/>.</exception>
@@ -6353,6 +6563,9 @@
             </para>
             </remarks>
         </member>
+        <member name="M:log4net.Appender.TelnetAppender.Flush(System.Int32)">
+            <inheritdoc/>
+        </member>
         <member name="P:log4net.Appender.TelnetAppender.RequiresLayout">
             <summary>
             This appender requires a <see cref="N:log4net.Layout"/> to be set.
@@ -6361,6 +6574,16 @@
         <member name="M:log4net.Appender.TelnetAppender.ActivateOptions">
             <summary>
             Create the socket handler and wait for connections
+            </summary>
+        </member>
+        <member name="M:log4net.Appender.TelnetAppender.SendToClients(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Writes one rendered event to every client, on the background thread.
+            </summary>
+        </member>
+        <member name="M:log4net.Appender.TelnetAppender.Report(System.String,System.Exception)">
+            <summary>
+            Reports a send failure through the appender's error handler.
             </summary>
         </member>
         <member name="M:log4net.Appender.TelnetAppender.Append(log4net.Core.LoggingEvent)">
@@ -6428,7 +6651,8 @@
             block before that client is disconnected, or 0 to block indefinitely</param>
             <remarks>
             <para>
-            Creates a socket handler on the specified local server port.
+            Creates a socket handler on the specified local server port, listening on
+            <see cref="F:System.Net.IPAddress.Loopback"/>.
             </para>
             </remarks>
         </member>
@@ -6975,6 +7199,18 @@
             </para>
             </remarks>
         </member>
+        <member name="P:log4net.Appender.UdpAppender.MaxDatagramSize">
+            <summary>
+            Gets or sets the largest datagram this appender sends, in bytes.
+            </summary>
+            <value>A value from 512 to 65507, the maximum UDP payload of an IPv4 packet. Default 65507.</value>
+            <remarks>
+            The socket rejects a larger datagram, so a longer event is truncated to fit instead of lost.
+            Lower the value to match a receiver that accepts less. IPv6 would carry 20 bytes more, which
+            is not worth a second limit.
+            </remarks>
+            <exception cref="T:System.ArgumentOutOfRangeException">The value specified is outside 512 to 65507.</exception>
+        </member>
         <member name="P:log4net.Appender.UdpAppender.Client">
             <summary>
             Gets or sets the underlying <see cref="T:System.Net.Sockets.UdpClient" />.
@@ -7038,6 +7274,22 @@
             </para>
             </remarks>
         </member>
+        <member name="M:log4net.Appender.UdpAppender.GetDatagramBytes(System.String)">
+            <summary>
+            Encodes a rendered event for one datagram, truncated to <see cref="P:log4net.Appender.UdpAppender.MaxDatagramSize"/>.
+            </summary>
+            <param name="message">The rendered event.</param>
+            <returns>The bytes to send, ending in <c>...[truncated]</c> when the event did not fit.</returns>
+            <remarks>
+            An oversize datagram is rejected by the socket, which used to cost the whole event.
+            </remarks>
+        </member>
+        <member name="M:log4net.Appender.UdpAppender.GetTruncatedBytes(System.String,System.Byte[])">
+            <summary>Encodes as much of <paramref name="message"/> as fits, ending in the marker.</summary>
+            <param name="message">The rendered event.</param>
+            <param name="datagram">The whole encoded event, reused as the encoder's output.</param>
+            <returns>The bytes to send, of at most <see cref="P:log4net.Appender.UdpAppender.MaxDatagramSize"/> length.</returns>
+        </member>
         <member name="P:log4net.Appender.UdpAppender.RequiresLayout">
             <summary>
             This appender requires a <see cref="N:log4net.Layout"/> to be set.
@@ -7078,6 +7330,26 @@
         <member name="F:log4net.Appender.UdpAppender._localPort">
             <summary>
             The TCP port number from which the <see cref="T:System.Net.Sockets.UdpClient" /> will communicate.
+            </summary>
+        </member>
+        <member name="F:log4net.Appender.UdpAppender._maxDatagramSize">
+            <summary>
+            The largest datagram this appender sends.
+            </summary>
+        </member>
+        <member name="F:log4net.Appender.UdpAppender.MaxIPv4DatagramSize">
+            <summary>
+            The maximum UDP payload of an IPv4 packet.
+            </summary>
+        </member>
+        <member name="F:log4net.Appender.UdpAppender.MinDatagramSize">
+            <summary>
+            The smallest datagram size an operator may configure.
+            </summary>
+        </member>
+        <member name="F:log4net.Appender.UdpAppender.TruncationMarker">
+            <summary>
+            Marks a datagram that could not carry the whole event.
             </summary>
         </member>
         <member name="T:log4net.Config.AliasRepositoryAttribute">
@@ -13671,19 +13943,46 @@
             <para>
             A regular expression that backtracks can take a very long time on some inputs. The pattern is
             matched while the appender lock is held, so an unbounded match would stall everything logging
-            through the appender, and matching is therefore given a deadline. A match that reaches it is
-            treated as no match, leaving the rest of the filter chain to decide.
+            through the appender, and matching is therefore given a deadline. <see cref="P:log4net.Filter.StringMatchFilter.TimeoutDecision"/>
+            decides an event whose match is abandoned.
             </para>
             <para>
-            The pattern comes from configuration and is trusted, so this is a guard against a pattern that
-            turns out to be expensive rather than protection against untrusted input.
+            The pattern comes from configuration and is trusted, but the content it is matched against is
+            not, and the content decides whether the deadline is reached. This is therefore the bound on
+            how long one crafted event can hold the appender lock.
             </para>
             <para>
-            The default value is 1000 (one second). Setting the value to 0 restores unbounded matching and
-            is not recommended. Changing it takes effect when <see cref="M:log4net.Filter.StringMatchFilter.ActivateOptions"/> is called.
+            The default value is 50. A legitimate match over an event runs in a fraction of that; raise it
+            if a pattern genuinely needs longer. Setting the value to 0 restores unbounded matching and is
+            not recommended. Changing it takes effect when <see cref="M:log4net.Filter.StringMatchFilter.ActivateOptions"/> is called.
             </para>
             </remarks>
             <exception cref="T:System.ArgumentOutOfRangeException">The value specified is negative.</exception>
+        </member>
+        <member name="P:log4net.Filter.StringMatchFilter.TimeoutDecision">
+            <summary>
+            Gets or sets the decision for an event whose match was abandoned because it reached
+            <see cref="P:log4net.Filter.StringMatchFilter.MatchTimeoutMillis"/>.
+            </summary>
+            <remarks>
+            <para>
+            An abandoned match is not a non-match: the content being matched decides whether the deadline
+            is reached, so treating it as "did not match" lets content choose its own outcome. In an
+            <see cref="P:log4net.Filter.StringMatchFilter.AcceptOnMatch"/> allowlist followed by a deny-all, that means content can suppress
+            its own record.
+            </para>
+            <para>
+            The default is <see cref="F:log4net.Filter.FilterDecision.Neutral"/>, which leaves the rest of the chain to
+            decide. Set <see cref="F:log4net.Filter.FilterDecision.Accept"/> to make an allowlist fail towards logging, or
+            <see cref="F:log4net.Filter.FilterDecision.Deny"/> in a deny-on-match chain. No one direction is right for
+            every chain, which is why this is configured rather than chosen here.
+            </para>
+            </remarks>
+        </member>
+        <member name="P:log4net.Filter.StringMatchFilter.MatchDecision">
+            <summary>
+            The decision a match produces, per <see cref="P:log4net.Filter.StringMatchFilter.AcceptOnMatch"/>.
+            </summary>
         </member>
         <member name="M:log4net.Filter.StringMatchFilter.IsRegexMatch(System.String)">
             <summary>
@@ -13693,6 +13992,29 @@
             <returns>
             <see langword="true"/> when the pattern matches, and <see langword="false"/> when it does not
             or when matching took longer than <see cref="P:log4net.Filter.StringMatchFilter.MatchTimeoutMillis"/>.
+            </returns>
+        </member>
+        <member name="M:log4net.Filter.StringMatchFilter.DecideRegexMatch(System.String)">
+            <summary>
+            Decides <paramref name="value"/> on the pattern, honouring <see cref="P:log4net.Filter.StringMatchFilter.TimeoutDecision"/>.
+            </summary>
+            <param name="value">The text to match.</param>
+            <returns>The decision for the event the text came from.</returns>
+        </member>
+        <member name="M:log4net.Filter.StringMatchFilter.TryRegexMatch(System.String,System.Boolean@)">
+            <summary>
+            Matches <paramref name="value"/>, reporting an abandoned match once per filter.
+            </summary>
+            <returns><see langword="false"/> when the match was abandoned.</returns>
+        </member>
+        <member name="M:log4net.Filter.StringMatchFilter.DecideOnValue(System.String)">
+            <summary>
+            Decides <paramref name="value"/> on <see cref="P:log4net.Filter.StringMatchFilter.RegexToMatch"/> or <see cref="P:log4net.Filter.StringMatchFilter.StringToMatch"/>.
+            </summary>
+            <param name="value">The text to match, or <see langword="null"/> when there is none.</param>
+            <returns>
+            <see cref="F:log4net.Filter.FilterDecision.Neutral"/> when there is nothing to match or nothing to match it
+            against, otherwise the decision for the event the text came from.
             </returns>
         </member>
         <member name="F:log4net.Filter.StringMatchFilter._declaringType">
@@ -15186,907 +15508,6 @@
             </para>
             </remarks>
         </member>
-        <member name="T:log4net.Layout.Pattern.AppDomainPatternConverter">
-            <summary>
-            Write the event appdomain name to the output
-            </summary>
-            <remarks>
-            <para>
-            Writes the <see cref="P:log4net.Core.LoggingEvent.Domain"/> to the output writer.
-            </para>
-            </remarks>
-            <author>Daniel Cazzulino</author>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.AppDomainPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the event appdomain name to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes the <see cref="P:log4net.Core.LoggingEvent.Domain"/> to the output <paramref name="writer"/>.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.AspNetCachePatternConverter">
-            <summary>
-            Converter for items in the ASP.Net Cache.
-            </summary>
-            <remarks>
-            <para>
-            Outputs an item from the <see cref="P:System.Web.HttpRuntime.Cache" />.
-            </para>
-            </remarks>
-            <author>Ron Grabowski</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.AspNetCachePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
-            <summary>
-            Write the ASP.Net Cache item to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
-            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
-            <remarks>
-            <para>
-            Writes out the value of a named property. The property name
-            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
-            property. If no property has been set, all key value pairs from the Cache will
-            be written to the output.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.AspNetContextPatternConverter">
-            <summary>
-            Converter for items in the <see cref="T:System.Web.HttpContext" />.
-            </summary>
-            <remarks>
-            <para>
-            Outputs an item from the <see cref="T:System.Web.HttpContext" />.
-            </para>
-            </remarks>
-            <author>Ron Grabowski</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.AspNetContextPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
-            <summary>
-            Write the ASP.Net HttpContext item to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
-            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
-            <remarks>
-            <para>
-            Writes out the value of a named property. The property name
-            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
-            property.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.AspNetPatternLayoutConverter">
-            <summary>
-            Abstract class that provides access to the current HttpContext (<see cref="P:System.Web.HttpContext.Current" />) that 
-            derived classes need.
-            </summary>
-            <remarks>
-            This class handles the case when HttpContext.Current is null by writing
-            <see cref="P:log4net.Util.SystemInfo.NotAvailableText" /> to the writer.
-            </remarks>
-            <author>Ron Grabowski</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.AspNetPatternLayoutConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
-            <summary>
-            Derived pattern converters must override this method in order to
-            convert conversion specifiers in the correct way.
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
-            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
-        </member>
-        <member name="T:log4net.Layout.Pattern.AspNetRequestPatternConverter">
-            <summary>
-            Converter for items in the ASP.Net Cache.
-            </summary>
-            <remarks>
-            <para>
-            Outputs an item from the <see cref="P:System.Web.HttpRuntime.Cache" />.
-            </para>
-            </remarks>
-            <author>Ron Grabowski</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.AspNetRequestPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
-            <summary>
-            Write the ASP.Net Cache item to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
-            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
-            <remarks>
-            <para>
-            Writes out the value of a named property. The property name
-            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
-            property.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.AspNetSessionPatternConverter">
-            <summary>
-            Converter for items in the ASP.Net Cache.
-            </summary>
-            <remarks>
-            <para>
-            Outputs an item from the <see cref="P:System.Web.HttpRuntime.Cache" />.
-            </para>
-            </remarks>
-            <author>Ron Grabowski</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.AspNetSessionPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
-            <summary>
-            Write the ASP.Net Cache item to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
-            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
-            <remarks>
-            <para>
-            Writes out the value of a named property. The property name
-            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
-            property. If no property has been set, all key value pairs from the Session will
-            be written to the output.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.DatePatternConverter">
-            <summary>
-            Date pattern converter, uses a <see cref="T:log4net.DateFormatter.IDateFormatter"/> to format 
-            the date of a <see cref="T:log4net.Core.LoggingEvent"/>.
-            </summary>
-            <remarks>
-            <para>
-            Render the <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> to the writer as a string.
-            </para>
-            <para>
-            The value of the <see cref="P:log4net.Util.PatternConverter.Option"/> determines 
-            the formatting of the date. The following values are allowed:
-            <list type="definition">
-               <listheader>
-                <term>Option value</term>
-                <description>Output</description>
-              </listheader>
-               <item>
-                <term>ISO8601</term>
-                <description>
-                Uses the <see cref="T:log4net.DateFormatter.Iso8601DateFormatter"/> formatter. 
-                Formats using the <c>"yyyy-MM-dd HH:mm:ss,fff"</c> pattern.
-                </description>
-              </item>
-              <item>
-                <term>DATE</term>
-                <description>
-                Uses the <see cref="T:log4net.DateFormatter.DateTimeDateFormatter"/> formatter. 
-                Formats using the <c>"dd MMM yyyy HH:mm:ss,fff"</c> for example, <c>"06 Nov 1994 15:49:37,459"</c>.
-                </description>
-              </item>
-              <item>
-                <term>ABSOLUTE</term>
-                <description>
-                Uses the <see cref="T:log4net.DateFormatter.AbsoluteTimeDateFormatter"/> formatter. 
-                Formats using the <c>"HH:mm:ss,yyyy"</c> for example, <c>"15:49:37,459"</c>.
-                </description>
-              </item>
-              <item>
-                <term>other</term>
-                <description>
-                Any other pattern string uses the <see cref="T:log4net.DateFormatter.SimpleDateFormatter"/> formatter. 
-                This formatter passes the pattern string to the <see cref="T:System.DateTime"/> 
-                <see cref="M:System.DateTime.ToString(System.String)"/> method.
-                For details on valid patterns see 
-                <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfsystemglobalizationdatetimeformatinfoclasstopic.asp">DateTimeFormatInfo Class</a>.
-                </description>
-              </item>
-            </list>
-            </para>
-            <para>
-            The <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> is in the local time zone and is rendered in that zone.
-            To output the time in Universal time see <see cref="T:log4net.Layout.Pattern.UtcDatePatternConverter"/>.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="P:log4net.Layout.Pattern.DatePatternConverter.m_dateFormatter">
-            <summary>
-            The <see cref="T:log4net.DateFormatter.IDateFormatter"/> used to render the date to a string
-            </summary>
-        </member>
-        <member name="M:log4net.Layout.Pattern.DatePatternConverter.ActivateOptions">
-            <summary>
-            Initialize the converter pattern based on the <see cref="P:log4net.Util.PatternConverter.Option"/> property.
-            </summary>
-            <remarks>
-            <para>
-            This is part of the <see cref="T:log4net.Core.IOptionHandler"/> delayed object
-            activation scheme. The <see cref="M:log4net.Layout.Pattern.DatePatternConverter.ActivateOptions"/> method must 
-            be called on this object after the configuration properties have
-            been set. Until <see cref="M:log4net.Layout.Pattern.DatePatternConverter.ActivateOptions"/> is called this
-            object is in an undefined state and must not be used. 
-            </para>
-            <para>
-            If any of the configuration properties are modified then 
-            <see cref="M:log4net.Layout.Pattern.DatePatternConverter.ActivateOptions"/> must be called again.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:log4net.Layout.Pattern.DatePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Converts the pattern into the rendered message.
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Pass the <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> to the <see cref="T:log4net.DateFormatter.IDateFormatter"/>
-            for it to render it to the writer.
-            </para>
-            <para>
-            The <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> passed is in the local time zone.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.ExceptionPatternConverter">
-            <summary>
-            Write the exception text to the output
-            </summary>
-            <remarks>
-            <para>
-            If an exception object is stored in the logging event
-            it will be rendered into the pattern output with a
-            trailing newline.
-            </para>
-            <para>
-            If there is no exception then nothing will be output
-            and no trailing newline will be appended.
-            It is typical to put a newline before the exception
-            and to have the exception as the last data in the pattern.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.ExceptionPatternConverter.#ctor">
-            <summary>
-            Default constructor
-            </summary>
-        </member>
-        <member name="M:log4net.Layout.Pattern.ExceptionPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the exception text to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            If an exception object is stored in the logging event
-            it will be rendered into the pattern output with a
-            trailing newline.
-            </para>
-            <para>
-            If there is no exception or the exception property specified
-            by the Option value does not exist then nothing will be output
-            and no trailing newline will be appended.
-            It is typical to put a newline before the exception
-            and to have the exception as the last data in the pattern.
-            </para>
-            <para>
-            Recognized values for the Option parameter are:
-            </para>
-            <list type="bullet">
-               <item>
-                 <description>Message</description>
-               </item>
-               <item>
-                 <description>Source</description>
-               </item>
-               <item>
-                 <description>StackTrace</description>
-               </item>
-               <item>
-                 <description>TargetSite</description>
-               </item>
-               <item>
-                 <description>HelpLink</description>
-               </item>    
-            </list>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.FileLocationPatternConverter">
-            <summary>
-            Writes the value of the <see cref="P:log4net.Core.LocationInfo.FileName"/> for
-            the event to the output writer.
-            </summary>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.FileLocationPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Writes the value of the <see cref="P:log4net.Core.LocationInfo.FileName"/> for
-            the <paramref name="loggingEvent"/> to the output <paramref name="writer"/>.
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-        </member>
-        <member name="T:log4net.Layout.Pattern.FullLocationPatternConverter">
-            <summary>
-            Write the caller location info to the output
-            </summary>
-            <remarks>
-            <para>
-            Writes the <see cref="P:log4net.Core.LocationInfo.FullInfo"/> to the output writer.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.FullLocationPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the caller location info to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes the <see cref="P:log4net.Core.LocationInfo.FullInfo"/> to the output writer.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.IdentityPatternConverter">
-            <summary>
-            Writes the event identity to the output
-            </summary>
-            <remarks>
-            <para>
-            Writes the value of the <see cref="P:log4net.Core.LoggingEvent.Identity"/> to
-            the output writer.
-            </para>
-            </remarks>
-            <author>Daniel Cazzulino</author>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.IdentityPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Writes the event identity to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes the value of the <paramref name="loggingEvent"/> 
-            <see cref="P:log4net.Core.LoggingEvent.Identity"/> to
-            the output <paramref name="writer"/>.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.LevelPatternConverter">
-            <summary>
-            Write the event level to the output
-            </summary>
-            <remarks>
-            <para>
-            Writes the display name of the event <see cref="P:log4net.Core.LoggingEvent.Level"/>
-            to the writer.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.LevelPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the event level to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes the <see cref="P:log4net.Core.Level.DisplayName"/> of the <paramref name="loggingEvent"/> <see cref="P:log4net.Core.LoggingEvent.Level"/>
-            to the <paramref name="writer"/>.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.LineLocationPatternConverter">
-            <summary>
-            Write the caller location line number to the output
-            </summary>
-            <remarks>
-            <para>
-            Writes the value of the <see cref="P:log4net.Core.LocationInfo.LineNumber"/> for
-            the event to the output writer.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.LineLocationPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the caller location line number to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes the value of the <see cref="P:log4net.Core.LocationInfo.LineNumber"/> for
-            the <paramref name="loggingEvent"/> to the output <paramref name="writer"/>.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.LoggerPatternConverter">
-            <summary>
-            Converter for logger name
-            </summary>
-            <remarks>
-            <para>
-            Outputs the <see cref="P:log4net.Core.LoggingEvent.LoggerName"/> of the event.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.LoggerPatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)">
-            <summary>
-            Gets the fully qualified name of the logger
-            </summary>
-            <param name="loggingEvent">the event being logged</param>
-            <returns>The fully qualified logger name</returns>
-            <remarks>
-            <para>
-            Returns the <see cref="P:log4net.Core.LoggingEvent.LoggerName"/> of the <paramref name="loggingEvent"/>.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.MessagePatternConverter">
-            <summary>
-            Writes the event message to the output
-            </summary>
-            <remarks>
-            <para>
-            Uses the <see cref="M:log4net.Core.LoggingEvent.WriteRenderedMessage(System.IO.TextWriter)"/> method
-            to write out the event message.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.MessagePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Writes the event message to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Uses the <see cref="M:log4net.Core.LoggingEvent.WriteRenderedMessage(System.IO.TextWriter)"/> method
-            to write out the event message.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.MethodLocationPatternConverter">
-            <summary>
-            Write the method name to the output
-            </summary>
-            <remarks>
-            <para>
-            Writes the caller location <see cref="P:log4net.Core.LocationInfo.MethodName"/> to
-            the output.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.MethodLocationPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the method name to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes the caller location <see cref="P:log4net.Core.LocationInfo.MethodName"/> to
-            the output.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.NamedPatternConverter">
-            <summary>
-            Converter to output and truncate <c>'.'</c> separated strings
-            </summary>
-            <remarks>
-            <para>
-            This abstract class supports truncating a <c>'.'</c> separated string
-            to show a specified number of elements from the right hand side.
-            This is used to truncate class names that are fully qualified.
-            </para>
-            <para>
-            Subclasses should override the <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)"/> method to
-            return the fully qualified string.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.NamedPatternConverter.ActivateOptions">
-            <summary>
-            Initialize the converter 
-            </summary>
-            <remarks>
-            <para>
-            This is part of the <see cref="T:log4net.Core.IOptionHandler"/> delayed object
-            activation scheme. The <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.ActivateOptions"/> method must 
-            be called on this object after the configuration properties have
-            been set. Until <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.ActivateOptions"/> is called this
-            object is in an undefined state and must not be used. 
-            </para>
-            <para>
-            If any of the configuration properties are modified then 
-            <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.ActivateOptions"/> must be called again.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:log4net.Layout.Pattern.NamedPatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)">
-            <summary>
-            Gets the fully qualified <c>'.'</c> (dot/period) separated name for an event.
-            </summary>
-            <param name="loggingEvent">the event being logged</param>
-            <returns>the fully qualified name</returns>
-            <remarks>
-            <para>
-            Overridden by subclasses to get the fully qualified name before the
-            precision is applied to it.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:log4net.Layout.Pattern.NamedPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Converts the pattern to the rendered message
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            Render the <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)"/> to the precision
-            specified by the <see cref="P:log4net.Util.PatternConverter.Option"/> property.
-            </remarks>
-        </member>
-        <member name="F:log4net.Layout.Pattern.NamedPatternConverter._declaringType">
-            <summary>
-            The fully qualified type of the NamedPatternConverter class.
-            </summary>
-            <remarks>
-            Used by the internal logger to record the Type of the
-            log message.
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.NdcPatternConverter">
-            <summary>
-            Converter to include event NDC
-            </summary>
-            <remarks>
-            <para>
-            Outputs the value of the event property named <c>NDC</c>.
-            </para>
-            <para>
-            The <see cref="T:log4net.Layout.Pattern.PropertyPatternConverter"/> should be used instead.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.NdcPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the event NDC to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            As the thread context stacks are now stored in named event properties
-            this converter simply looks up the value of the <c>NDC</c> property.
-            </para>
-            <para>
-            The <see cref="T:log4net.Layout.Pattern.PropertyPatternConverter"/> should be used instead.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.PatternLayoutConverter">
-            <summary>
-            Abstract class that provides the formatting functionality that 
-            derived classes need.
-            </summary>
-            <remarks>
-            Conversion specifiers in a conversion patterns are parsed to
-            individual PatternConverters. Each of which is responsible for
-            converting a logging event in a converter specific manner.
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.PatternLayoutConverter.#ctor">
-            <summary>
-            Initializes a new instance of the <see cref="T:log4net.Layout.Pattern.PatternLayoutConverter" /> class.
-            </summary>
-        </member>
-        <member name="P:log4net.Layout.Pattern.PatternLayoutConverter.IgnoresException">
-            <summary>
-            Flag indicating if this converter handles the logging event exception
-            </summary>
-            <value><see langword="false"/> if this converter handles the logging event exception</value>
-            <remarks>
-            <para>
-            If this converter handles the exception object contained within
-            <see cref="T:log4net.Core.LoggingEvent"/>, then this property should be set to
-            <see langword="false"/>. Otherwise, if the layout ignores the exception
-            object, then the property should be set to <see langword="true"/>.
-            </para>
-            <para>
-            Set this value to override a this default setting. The default
-            value is <see langword="true"/>, this converter does not handle the exception.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:log4net.Layout.Pattern.PatternLayoutConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Derived pattern converters must override this method in order to
-            convert conversion specifiers in the correct way.
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
-        </member>
-        <member name="M:log4net.Layout.Pattern.PatternLayoutConverter.Convert(System.IO.TextWriter,System.Object)">
-            <summary>
-            Derived pattern converters must override this method in order to
-            convert conversion specifiers in the correct way.
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="state">The state object on which the pattern converter should be executed.</param>
-        </member>
-        <member name="T:log4net.Layout.Pattern.PropertyPatternConverter">
-            <summary>
-            Property pattern converter
-            </summary>
-            <remarks>
-            <para>
-            Writes out the value of a named property. The property name
-            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
-            property.
-            </para>
-            <para>
-            If the <see cref="P:log4net.Util.PatternConverter.Option"/> is set to <see langword="null"/>
-            then all the properties are written as key value pairs.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.PropertyPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the property value to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes out the value of a named property. The property name
-            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
-            property.
-            </para>
-            <para>
-            If the <see cref="P:log4net.Util.PatternConverter.Option"/> is set to <see langword="null"/>
-            then all the properties are written as key value pairs.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.RelativeTimePatternConverter">
-            <summary>
-            Converter to output the relative time of the event
-            </summary>
-            <remarks>
-            <para>
-            Converter to output the time of the event relative to the start of the program.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.RelativeTimePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the relative time to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes out the relative time of the event in milliseconds.
-            That is the number of milliseconds between the event <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/>
-            and the <see cref="P:log4net.Core.LoggingEvent.StartTime"/>.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:log4net.Layout.Pattern.RelativeTimePatternConverter.TimeDifferenceInMillis(System.DateTime,System.DateTime)">
-            <summary>
-            Helper method to get the time difference between two DateTime objects
-            </summary>
-            <param name="start">start time (in the current local time zone)</param>
-            <param name="end">end time (in the current local time zone)</param>
-            <returns>the time difference in milliseconds</returns>
-        </member>
-        <member name="T:log4net.Layout.Pattern.StackTraceDetailPatternConverter">
-            <summary>
-            Writes the <see cref="P:log4net.Core.LocationInfo.StackFrames"/> to the output writer, using format:
-            type3.MethodCall3(type param,...) > type2.MethodCall2(type param,...) > type1.MethodCall1(type param,...)
-            </summary>
-            <author>Adam Davies</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.StackTraceDetailPatternConverter.GetMethodInformation(log4net.Core.MethodItem)">
-            <inheritdoc/>
-        </member>
-        <member name="F:log4net.Layout.Pattern.StackTraceDetailPatternConverter._declaringType">
-            <summary>
-            The fully qualified type of the StackTraceDetailPatternConverter class.
-            </summary>
-            <remarks>
-            Used by the internal logger to record the Type of the
-            log message.
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.StackTracePatternConverter">
-            <summary>
-            Write the caller stack frames to the output
-            </summary>
-            <remarks>
-            <para>
-            Writes the <see cref="P:log4net.Core.LocationInfo.StackFrames"/> to the output writer, using format:
-            type3.MethodCall3 > type2.MethodCall2 > type1.MethodCall1
-            </para>
-            </remarks>
-            <author>Michael Cromwell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.StackTracePatternConverter.ActivateOptions">
-            <summary>
-            Initialize the converter
-            </summary>
-            <remarks>
-            <para>
-            This is part of the <see cref="T:log4net.Core.IOptionHandler"/> delayed object
-            activation scheme. The <see cref="M:log4net.Layout.Pattern.StackTracePatternConverter.ActivateOptions"/> method must 
-            be called on this object after the configuration properties have
-            been set. Until <see cref="M:log4net.Layout.Pattern.StackTracePatternConverter.ActivateOptions"/> is called this
-            object is in an undefined state and must not be used. 
-            </para>
-            <para>
-            If any of the configuration properties are modified then 
-            <see cref="M:log4net.Layout.Pattern.StackTracePatternConverter.ActivateOptions"/> must be called again.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:log4net.Layout.Pattern.StackTracePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the strack frames to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes the <see cref="P:log4net.Core.LocationInfo.StackFrames"/> to the output writer.
-            </para>
-            </remarks>
-        </member>
-        <member name="M:log4net.Layout.Pattern.StackTracePatternConverter.GetMethodInformation(log4net.Core.MethodItem)">
-            <summary>
-            Returns the Name of the method
-            </summary>
-            <param name="method"></param>
-            <remarks>This method was created, so this class could be used as a base class for StackTraceDetailPatternConverter</remarks>
-            <returns>string</returns>
-        </member>
-        <member name="F:log4net.Layout.Pattern.StackTracePatternConverter._declaringType">
-            <summary>
-            The fully qualified type of the StackTracePatternConverter class.
-            </summary>
-            <remarks>
-            Used by the internal logger to record the Type of the
-            log message.
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.ThreadPatternConverter">
-            <summary>
-            Converter to include event thread name
-            </summary>
-            <remarks>
-            <para>
-            Writes the <see cref="P:log4net.Core.LoggingEvent.ThreadName"/> to the output.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.ThreadPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Write the ThreadName to the output
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Writes the <see cref="P:log4net.Core.LoggingEvent.ThreadName"/> to the <paramref name="writer" />.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.TypeNamePatternConverter">
-            <summary>
-            Pattern converter for the class name
-            </summary>
-            <remarks>
-            <para>
-            Outputs the <see cref="P:log4net.Core.LocationInfo.ClassName"/> of the event.
-            </para>
-            </remarks>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.TypeNamePatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)">
-            <summary>
-            Gets the fully qualified name of the class
-            </summary>
-            <param name="loggingEvent">the event being logged</param>
-            <returns>The fully qualified type name for the caller location</returns>
-            <remarks>
-            <para>
-            Returns the <see cref="P:log4net.Core.LocationInfo.ClassName"/> of the <paramref name="loggingEvent"/>.
-            </para>
-            </remarks>
-        </member>
-        <member name="T:log4net.Layout.Pattern.UserNamePatternConverter">
-            <summary>
-            Converter to include event user name
-            </summary>
-            <author>Douglas de la Torre</author>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.UserNamePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Convert the pattern to the rendered message
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-        </member>
-        <member name="T:log4net.Layout.Pattern.UtcDatePatternConverter">
-            <summary>
-            Writes the TimeStamp to the output.
-            </summary>
-            <remarks>
-            <para>
-            Date pattern converter, uses a <see cref="T:log4net.DateFormatter.IDateFormatter"/> to format 
-            the date of a <see cref="T:log4net.Core.LoggingEvent"/>.
-            </para>
-            <para>
-            Uses a <see cref="T:log4net.DateFormatter.IDateFormatter"/> to format the <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/>
-            in Universal time.
-            </para>
-            <para>
-            See the <see cref="T:log4net.Layout.Pattern.DatePatternConverter"/> for details on the date pattern syntax.
-            </para>
-            </remarks>
-            <seealso cref="T:log4net.Layout.Pattern.DatePatternConverter"/>
-            <author>Nicko Cadell</author>
-        </member>
-        <member name="M:log4net.Layout.Pattern.UtcDatePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
-            <summary>
-            Writes the TimeStamp to the output.
-            </summary>
-            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
-            <param name="loggingEvent">the event being logged</param>
-            <remarks>
-            <para>
-            Pass the <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> to the <see cref="T:log4net.DateFormatter.IDateFormatter"/>
-            for it to render it to the writer.
-            </para>
-            <para>
-            The <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> passed is in the local time zone, this is converted
-            to Universal time before it is rendered.
-            </para>
-            </remarks>
-            <seealso cref="T:log4net.Layout.Pattern.DatePatternConverter"/>
-        </member>
-        <member name="F:log4net.Layout.Pattern.UtcDatePatternConverter._declaringType">
-            <summary>
-            The fully qualified type of the UtcDatePatternConverter class.
-            </summary>
-            <remarks>
-            Used by the internal logger to record the Type of the
-            log message.
-            </remarks>
-        </member>
         <member name="T:log4net.Layout.PatternLayout">
             <summary>
             A flexible layout configurable with pattern string.
@@ -17025,6 +16446,912 @@
             The <paramref name="type"/> specified must extend the 
             <see cref="T:log4net.Util.PatternConverter"/> type.
             </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.AppDomainPatternConverter">
+            <summary>
+            Write the event appdomain name to the output
+            </summary>
+            <remarks>
+            <para>
+            Writes the <see cref="P:log4net.Core.LoggingEvent.Domain"/> to the output writer.
+            </para>
+            </remarks>
+            <author>Daniel Cazzulino</author>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.AppDomainPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the event appdomain name to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes the <see cref="P:log4net.Core.LoggingEvent.Domain"/> to the output <paramref name="writer"/>.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.AspNetCachePatternConverter">
+            <summary>
+            Converter for items in the ASP.Net Cache.
+            </summary>
+            <remarks>
+            <para>
+            Outputs an item from the <see cref="P:System.Web.HttpRuntime.Cache" />.
+            </para>
+            </remarks>
+            <author>Ron Grabowski</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.AspNetCachePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
+            <summary>
+            Write the ASP.Net Cache item to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
+            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
+            <remarks>
+            <para>
+            Writes out the value of a named property. The property name
+            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
+            property. If no property has been set, all key value pairs from the Cache will
+            be written to the output.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.AspNetContextPatternConverter">
+            <summary>
+            Converter for items in the <see cref="T:System.Web.HttpContext" />.
+            </summary>
+            <remarks>
+            <para>
+            Outputs an item from the <see cref="T:System.Web.HttpContext" />.
+            </para>
+            </remarks>
+            <author>Ron Grabowski</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.AspNetContextPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
+            <summary>
+            Write the ASP.Net HttpContext item to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
+            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
+            <remarks>
+            <para>
+            Writes out the value of a named property. The property name
+            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
+            property.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.AspNetPatternLayoutConverter">
+            <summary>
+            Abstract class that provides access to the current HttpContext (<see cref="P:System.Web.HttpContext.Current" />) that 
+            derived classes need.
+            </summary>
+            <remarks>
+            This class handles the case when HttpContext.Current is null by writing
+            <see cref="P:log4net.Util.SystemInfo.NotAvailableText" /> to the writer.
+            </remarks>
+            <author>Ron Grabowski</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.AspNetPatternLayoutConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
+            <summary>
+            Derived pattern converters must override this method in order to
+            convert conversion specifiers in the correct way.
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
+            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
+        </member>
+        <member name="T:log4net.Layout.Pattern.AspNetRequestPatternConverter">
+            <summary>
+            Converter for items in the ASP.Net Cache.
+            </summary>
+            <remarks>
+            <para>
+            Outputs an item from the <see cref="P:System.Web.HttpRuntime.Cache" />.
+            </para>
+            </remarks>
+            <author>Ron Grabowski</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.AspNetRequestPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
+            <summary>
+            Write the ASP.Net Cache item to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
+            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
+            <remarks>
+            <para>
+            Writes out the value of a named property. The property name
+            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
+            property.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Layout.Pattern.AspNetRequestPatternConverter.GetParameters(System.Web.HttpRequest)">
+            <summary>
+            Rebuilds <see cref="P:System.Web.HttpRequest.Params"/> from the unvalidated values.
+            </summary>
+        </member>
+        <member name="T:log4net.Layout.Pattern.AspNetSessionPatternConverter">
+            <summary>
+            Converter for items in the ASP.Net Cache.
+            </summary>
+            <remarks>
+            <para>
+            Outputs an item from the <see cref="P:System.Web.HttpRuntime.Cache" />.
+            </para>
+            </remarks>
+            <author>Ron Grabowski</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.AspNetSessionPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent,System.Web.HttpContext)">
+            <summary>
+            Write the ASP.Net Cache item to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
+            <param name="httpContext">The <see cref="T:System.Web.HttpContext" /> under which the ASP.Net request is running.</param>
+            <remarks>
+            <para>
+            Writes out the value of a named property. The property name
+            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
+            property. If no property has been set, all key value pairs from the Session will
+            be written to the output.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.DatePatternConverter">
+            <summary>
+            Date pattern converter, uses a <see cref="T:log4net.DateFormatter.IDateFormatter"/> to format 
+            the date of a <see cref="T:log4net.Core.LoggingEvent"/>.
+            </summary>
+            <remarks>
+            <para>
+            Render the <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> to the writer as a string.
+            </para>
+            <para>
+            The value of the <see cref="P:log4net.Util.PatternConverter.Option"/> determines 
+            the formatting of the date. The following values are allowed:
+            <list type="definition">
+               <listheader>
+                <term>Option value</term>
+                <description>Output</description>
+              </listheader>
+               <item>
+                <term>ISO8601</term>
+                <description>
+                Uses the <see cref="T:log4net.DateFormatter.Iso8601DateFormatter"/> formatter. 
+                Formats using the <c>"yyyy-MM-dd HH:mm:ss,fff"</c> pattern.
+                </description>
+              </item>
+              <item>
+                <term>DATE</term>
+                <description>
+                Uses the <see cref="T:log4net.DateFormatter.DateTimeDateFormatter"/> formatter. 
+                Formats using the <c>"dd MMM yyyy HH:mm:ss,fff"</c> for example, <c>"06 Nov 1994 15:49:37,459"</c>.
+                </description>
+              </item>
+              <item>
+                <term>ABSOLUTE</term>
+                <description>
+                Uses the <see cref="T:log4net.DateFormatter.AbsoluteTimeDateFormatter"/> formatter. 
+                Formats using the <c>"HH:mm:ss,yyyy"</c> for example, <c>"15:49:37,459"</c>.
+                </description>
+              </item>
+              <item>
+                <term>other</term>
+                <description>
+                Any other pattern string uses the <see cref="T:log4net.DateFormatter.SimpleDateFormatter"/> formatter. 
+                This formatter passes the pattern string to the <see cref="T:System.DateTime"/> 
+                <see cref="M:System.DateTime.ToString(System.String)"/> method.
+                For details on valid patterns see 
+                <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfsystemglobalizationdatetimeformatinfoclasstopic.asp">DateTimeFormatInfo Class</a>.
+                </description>
+              </item>
+            </list>
+            </para>
+            <para>
+            The <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> is in the local time zone and is rendered in that zone.
+            To output the time in Universal time see <see cref="T:log4net.Layout.Pattern.UtcDatePatternConverter"/>.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="P:log4net.Layout.Pattern.DatePatternConverter.m_dateFormatter">
+            <summary>
+            The <see cref="T:log4net.DateFormatter.IDateFormatter"/> used to render the date to a string
+            </summary>
+        </member>
+        <member name="M:log4net.Layout.Pattern.DatePatternConverter.ActivateOptions">
+            <summary>
+            Initialize the converter pattern based on the <see cref="P:log4net.Util.PatternConverter.Option"/> property.
+            </summary>
+            <remarks>
+            <para>
+            This is part of the <see cref="T:log4net.Core.IOptionHandler"/> delayed object
+            activation scheme. The <see cref="M:log4net.Layout.Pattern.DatePatternConverter.ActivateOptions"/> method must 
+            be called on this object after the configuration properties have
+            been set. Until <see cref="M:log4net.Layout.Pattern.DatePatternConverter.ActivateOptions"/> is called this
+            object is in an undefined state and must not be used. 
+            </para>
+            <para>
+            If any of the configuration properties are modified then 
+            <see cref="M:log4net.Layout.Pattern.DatePatternConverter.ActivateOptions"/> must be called again.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Layout.Pattern.DatePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Converts the pattern into the rendered message.
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Pass the <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> to the <see cref="T:log4net.DateFormatter.IDateFormatter"/>
+            for it to render it to the writer.
+            </para>
+            <para>
+            The <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> passed is in the local time zone.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.ExceptionPatternConverter">
+            <summary>
+            Write the exception text to the output
+            </summary>
+            <remarks>
+            <para>
+            If an exception object is stored in the logging event
+            it will be rendered into the pattern output with a
+            trailing newline.
+            </para>
+            <para>
+            If there is no exception then nothing will be output
+            and no trailing newline will be appended.
+            It is typical to put a newline before the exception
+            and to have the exception as the last data in the pattern.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.ExceptionPatternConverter.#ctor">
+            <summary>
+            Default constructor
+            </summary>
+        </member>
+        <member name="M:log4net.Layout.Pattern.ExceptionPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the exception text to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            If an exception object is stored in the logging event
+            it will be rendered into the pattern output with a
+            trailing newline.
+            </para>
+            <para>
+            If there is no exception or the exception property specified
+            by the Option value does not exist then nothing will be output
+            and no trailing newline will be appended.
+            It is typical to put a newline before the exception
+            and to have the exception as the last data in the pattern.
+            </para>
+            <para>
+            Recognized values for the Option parameter are:
+            </para>
+            <list type="bullet">
+               <item>
+                 <description>Message</description>
+               </item>
+               <item>
+                 <description>Source</description>
+               </item>
+               <item>
+                 <description>StackTrace</description>
+               </item>
+               <item>
+                 <description>TargetSite</description>
+               </item>
+               <item>
+                 <description>HelpLink</description>
+               </item>    
+            </list>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.FileLocationPatternConverter">
+            <summary>
+            Writes the value of the <see cref="P:log4net.Core.LocationInfo.FileName"/> for
+            the event to the output writer.
+            </summary>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.FileLocationPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Writes the value of the <see cref="P:log4net.Core.LocationInfo.FileName"/> for
+            the <paramref name="loggingEvent"/> to the output <paramref name="writer"/>.
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+        </member>
+        <member name="T:log4net.Layout.Pattern.FullLocationPatternConverter">
+            <summary>
+            Write the caller location info to the output
+            </summary>
+            <remarks>
+            <para>
+            Writes the <see cref="P:log4net.Core.LocationInfo.FullInfo"/> to the output writer.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.FullLocationPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the caller location info to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes the <see cref="P:log4net.Core.LocationInfo.FullInfo"/> to the output writer.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.IdentityPatternConverter">
+            <summary>
+            Writes the event identity to the output
+            </summary>
+            <remarks>
+            <para>
+            Writes the value of the <see cref="P:log4net.Core.LoggingEvent.Identity"/> to
+            the output writer.
+            </para>
+            </remarks>
+            <author>Daniel Cazzulino</author>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.IdentityPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Writes the event identity to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes the value of the <paramref name="loggingEvent"/> 
+            <see cref="P:log4net.Core.LoggingEvent.Identity"/> to
+            the output <paramref name="writer"/>.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.LevelPatternConverter">
+            <summary>
+            Write the event level to the output
+            </summary>
+            <remarks>
+            <para>
+            Writes the display name of the event <see cref="P:log4net.Core.LoggingEvent.Level"/>
+            to the writer.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.LevelPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the event level to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes the <see cref="P:log4net.Core.Level.DisplayName"/> of the <paramref name="loggingEvent"/> <see cref="P:log4net.Core.LoggingEvent.Level"/>
+            to the <paramref name="writer"/>.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.LineLocationPatternConverter">
+            <summary>
+            Write the caller location line number to the output
+            </summary>
+            <remarks>
+            <para>
+            Writes the value of the <see cref="P:log4net.Core.LocationInfo.LineNumber"/> for
+            the event to the output writer.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.LineLocationPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the caller location line number to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes the value of the <see cref="P:log4net.Core.LocationInfo.LineNumber"/> for
+            the <paramref name="loggingEvent"/> to the output <paramref name="writer"/>.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.LoggerPatternConverter">
+            <summary>
+            Converter for logger name
+            </summary>
+            <remarks>
+            <para>
+            Outputs the <see cref="P:log4net.Core.LoggingEvent.LoggerName"/> of the event.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.LoggerPatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)">
+            <summary>
+            Gets the fully qualified name of the logger
+            </summary>
+            <param name="loggingEvent">the event being logged</param>
+            <returns>The fully qualified logger name</returns>
+            <remarks>
+            <para>
+            Returns the <see cref="P:log4net.Core.LoggingEvent.LoggerName"/> of the <paramref name="loggingEvent"/>.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.MessagePatternConverter">
+            <summary>
+            Writes the event message to the output
+            </summary>
+            <remarks>
+            <para>
+            Uses the <see cref="M:log4net.Core.LoggingEvent.WriteRenderedMessage(System.IO.TextWriter)"/> method
+            to write out the event message.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.MessagePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Writes the event message to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Uses the <see cref="M:log4net.Core.LoggingEvent.WriteRenderedMessage(System.IO.TextWriter)"/> method
+            to write out the event message.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.MethodLocationPatternConverter">
+            <summary>
+            Write the method name to the output
+            </summary>
+            <remarks>
+            <para>
+            Writes the caller location <see cref="P:log4net.Core.LocationInfo.MethodName"/> to
+            the output.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.MethodLocationPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the method name to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes the caller location <see cref="P:log4net.Core.LocationInfo.MethodName"/> to
+            the output.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.NamedPatternConverter">
+            <summary>
+            Converter to output and truncate <c>'.'</c> separated strings
+            </summary>
+            <remarks>
+            <para>
+            This abstract class supports truncating a <c>'.'</c> separated string
+            to show a specified number of elements from the right hand side.
+            This is used to truncate class names that are fully qualified.
+            </para>
+            <para>
+            Subclasses should override the <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)"/> method to
+            return the fully qualified string.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.NamedPatternConverter.ActivateOptions">
+            <summary>
+            Initialize the converter 
+            </summary>
+            <remarks>
+            <para>
+            This is part of the <see cref="T:log4net.Core.IOptionHandler"/> delayed object
+            activation scheme. The <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.ActivateOptions"/> method must 
+            be called on this object after the configuration properties have
+            been set. Until <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.ActivateOptions"/> is called this
+            object is in an undefined state and must not be used. 
+            </para>
+            <para>
+            If any of the configuration properties are modified then 
+            <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.ActivateOptions"/> must be called again.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Layout.Pattern.NamedPatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)">
+            <summary>
+            Gets the fully qualified <c>'.'</c> (dot/period) separated name for an event.
+            </summary>
+            <param name="loggingEvent">the event being logged</param>
+            <returns>the fully qualified name</returns>
+            <remarks>
+            <para>
+            Overridden by subclasses to get the fully qualified name before the
+            precision is applied to it.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Layout.Pattern.NamedPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Converts the pattern to the rendered message
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            Render the <see cref="M:log4net.Layout.Pattern.NamedPatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)"/> to the precision
+            specified by the <see cref="P:log4net.Util.PatternConverter.Option"/> property.
+            </remarks>
+        </member>
+        <member name="F:log4net.Layout.Pattern.NamedPatternConverter._declaringType">
+            <summary>
+            The fully qualified type of the NamedPatternConverter class.
+            </summary>
+            <remarks>
+            Used by the internal logger to record the Type of the
+            log message.
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.NdcPatternConverter">
+            <summary>
+            Converter to include event NDC
+            </summary>
+            <remarks>
+            <para>
+            Outputs the value of the event property named <c>NDC</c>.
+            </para>
+            <para>
+            The <see cref="T:log4net.Layout.Pattern.PropertyPatternConverter"/> should be used instead.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.NdcPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the event NDC to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            As the thread context stacks are now stored in named event properties
+            this converter simply looks up the value of the <c>NDC</c> property.
+            </para>
+            <para>
+            The <see cref="T:log4net.Layout.Pattern.PropertyPatternConverter"/> should be used instead.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.PatternLayoutConverter">
+            <summary>
+            Abstract class that provides the formatting functionality that 
+            derived classes need.
+            </summary>
+            <remarks>
+            Conversion specifiers in a conversion patterns are parsed to
+            individual PatternConverters. Each of which is responsible for
+            converting a logging event in a converter specific manner.
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.PatternLayoutConverter.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:log4net.Layout.Pattern.PatternLayoutConverter" /> class.
+            </summary>
+        </member>
+        <member name="P:log4net.Layout.Pattern.PatternLayoutConverter.IgnoresException">
+            <summary>
+            Flag indicating if this converter handles the logging event exception
+            </summary>
+            <value><see langword="false"/> if this converter handles the logging event exception</value>
+            <remarks>
+            <para>
+            If this converter handles the exception object contained within
+            <see cref="T:log4net.Core.LoggingEvent"/>, then this property should be set to
+            <see langword="false"/>. Otherwise, if the layout ignores the exception
+            object, then the property should be set to <see langword="true"/>.
+            </para>
+            <para>
+            Set this value to override a this default setting. The default
+            value is <see langword="true"/>, this converter does not handle the exception.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Layout.Pattern.PatternLayoutConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Derived pattern converters must override this method in order to
+            convert conversion specifiers in the correct way.
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">The <see cref="T:log4net.Core.LoggingEvent" /> on which the pattern converter should be executed.</param>
+        </member>
+        <member name="M:log4net.Layout.Pattern.PatternLayoutConverter.Convert(System.IO.TextWriter,System.Object)">
+            <summary>
+            Derived pattern converters must override this method in order to
+            convert conversion specifiers in the correct way.
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="state">The state object on which the pattern converter should be executed.</param>
+        </member>
+        <member name="T:log4net.Layout.Pattern.PropertyPatternConverter">
+            <summary>
+            Property pattern converter
+            </summary>
+            <remarks>
+            <para>
+            Writes out the value of a named property. The property name
+            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
+            property.
+            </para>
+            <para>
+            If the <see cref="P:log4net.Util.PatternConverter.Option"/> is set to <see langword="null"/>
+            then all the properties are written as key value pairs.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.PropertyPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the property value to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes out the value of a named property. The property name
+            should be set in the <see cref="P:log4net.Util.PatternConverter.Option"/>
+            property.
+            </para>
+            <para>
+            If the <see cref="P:log4net.Util.PatternConverter.Option"/> is set to <see langword="null"/>
+            then all the properties are written as key value pairs.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.RelativeTimePatternConverter">
+            <summary>
+            Converter to output the relative time of the event
+            </summary>
+            <remarks>
+            <para>
+            Converter to output the time of the event relative to the start of the program.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.RelativeTimePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the relative time to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes out the relative time of the event in milliseconds.
+            That is the number of milliseconds between the event <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/>
+            and the <see cref="P:log4net.Core.LoggingEvent.StartTime"/>.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Layout.Pattern.RelativeTimePatternConverter.TimeDifferenceInMillis(System.DateTime,System.DateTime)">
+            <summary>
+            Helper method to get the time difference between two DateTime objects
+            </summary>
+            <param name="start">start time (in the current local time zone)</param>
+            <param name="end">end time (in the current local time zone)</param>
+            <returns>the time difference in milliseconds</returns>
+        </member>
+        <member name="T:log4net.Layout.Pattern.StackTraceDetailPatternConverter">
+            <summary>
+            Writes the <see cref="P:log4net.Core.LocationInfo.StackFrames"/> to the output writer, using format:
+            type3.MethodCall3(type param,...) > type2.MethodCall2(type param,...) > type1.MethodCall1(type param,...)
+            </summary>
+            <author>Adam Davies</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.StackTraceDetailPatternConverter.GetMethodInformation(log4net.Core.MethodItem)">
+            <inheritdoc/>
+        </member>
+        <member name="F:log4net.Layout.Pattern.StackTraceDetailPatternConverter._declaringType">
+            <summary>
+            The fully qualified type of the StackTraceDetailPatternConverter class.
+            </summary>
+            <remarks>
+            Used by the internal logger to record the Type of the
+            log message.
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.StackTracePatternConverter">
+            <summary>
+            Write the caller stack frames to the output
+            </summary>
+            <remarks>
+            <para>
+            Writes the <see cref="P:log4net.Core.LocationInfo.StackFrames"/> to the output writer, using format:
+            type3.MethodCall3 > type2.MethodCall2 > type1.MethodCall1
+            </para>
+            </remarks>
+            <author>Michael Cromwell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.StackTracePatternConverter.ActivateOptions">
+            <summary>
+            Initialize the converter
+            </summary>
+            <remarks>
+            <para>
+            This is part of the <see cref="T:log4net.Core.IOptionHandler"/> delayed object
+            activation scheme. The <see cref="M:log4net.Layout.Pattern.StackTracePatternConverter.ActivateOptions"/> method must 
+            be called on this object after the configuration properties have
+            been set. Until <see cref="M:log4net.Layout.Pattern.StackTracePatternConverter.ActivateOptions"/> is called this
+            object is in an undefined state and must not be used. 
+            </para>
+            <para>
+            If any of the configuration properties are modified then 
+            <see cref="M:log4net.Layout.Pattern.StackTracePatternConverter.ActivateOptions"/> must be called again.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Layout.Pattern.StackTracePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the strack frames to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes the <see cref="P:log4net.Core.LocationInfo.StackFrames"/> to the output writer.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Layout.Pattern.StackTracePatternConverter.GetMethodInformation(log4net.Core.MethodItem)">
+            <summary>
+            Returns the Name of the method
+            </summary>
+            <param name="method"></param>
+            <remarks>This method was created, so this class could be used as a base class for StackTraceDetailPatternConverter</remarks>
+            <returns>string</returns>
+        </member>
+        <member name="F:log4net.Layout.Pattern.StackTracePatternConverter._declaringType">
+            <summary>
+            The fully qualified type of the StackTracePatternConverter class.
+            </summary>
+            <remarks>
+            Used by the internal logger to record the Type of the
+            log message.
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.ThreadPatternConverter">
+            <summary>
+            Converter to include event thread name
+            </summary>
+            <remarks>
+            <para>
+            Writes the <see cref="P:log4net.Core.LoggingEvent.ThreadName"/> to the output.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.ThreadPatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Write the ThreadName to the output
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Writes the <see cref="P:log4net.Core.LoggingEvent.ThreadName"/> to the <paramref name="writer" />.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.TypeNamePatternConverter">
+            <summary>
+            Pattern converter for the class name
+            </summary>
+            <remarks>
+            <para>
+            Outputs the <see cref="P:log4net.Core.LocationInfo.ClassName"/> of the event.
+            </para>
+            </remarks>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.TypeNamePatternConverter.GetFullyQualifiedName(log4net.Core.LoggingEvent)">
+            <summary>
+            Gets the fully qualified name of the class
+            </summary>
+            <param name="loggingEvent">the event being logged</param>
+            <returns>The fully qualified type name for the caller location</returns>
+            <remarks>
+            <para>
+            Returns the <see cref="P:log4net.Core.LocationInfo.ClassName"/> of the <paramref name="loggingEvent"/>.
+            </para>
+            </remarks>
+        </member>
+        <member name="T:log4net.Layout.Pattern.UserNamePatternConverter">
+            <summary>
+            Converter to include event user name
+            </summary>
+            <author>Douglas de la Torre</author>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.UserNamePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Convert the pattern to the rendered message
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+        </member>
+        <member name="T:log4net.Layout.Pattern.UtcDatePatternConverter">
+            <summary>
+            Writes the TimeStamp to the output.
+            </summary>
+            <remarks>
+            <para>
+            Date pattern converter, uses a <see cref="T:log4net.DateFormatter.IDateFormatter"/> to format 
+            the date of a <see cref="T:log4net.Core.LoggingEvent"/>.
+            </para>
+            <para>
+            Uses a <see cref="T:log4net.DateFormatter.IDateFormatter"/> to format the <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/>
+            in Universal time.
+            </para>
+            <para>
+            See the <see cref="T:log4net.Layout.Pattern.DatePatternConverter"/> for details on the date pattern syntax.
+            </para>
+            </remarks>
+            <seealso cref="T:log4net.Layout.Pattern.DatePatternConverter"/>
+            <author>Nicko Cadell</author>
+        </member>
+        <member name="M:log4net.Layout.Pattern.UtcDatePatternConverter.Convert(System.IO.TextWriter,log4net.Core.LoggingEvent)">
+            <summary>
+            Writes the TimeStamp to the output.
+            </summary>
+            <param name="writer"><see cref="T:System.IO.TextWriter" /> that will receive the formatted result.</param>
+            <param name="loggingEvent">the event being logged</param>
+            <remarks>
+            <para>
+            Pass the <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> to the <see cref="T:log4net.DateFormatter.IDateFormatter"/>
+            for it to render it to the writer.
+            </para>
+            <para>
+            The <see cref="P:log4net.Core.LoggingEvent.TimeStamp"/> passed is in the local time zone, this is converted
+            to Universal time before it is rendered.
+            </para>
+            </remarks>
+            <seealso cref="T:log4net.Layout.Pattern.DatePatternConverter"/>
+        </member>
+        <member name="F:log4net.Layout.Pattern.UtcDatePatternConverter._declaringType">
+            <summary>
+            The fully qualified type of the UtcDatePatternConverter class.
+            </summary>
+            <remarks>
+            Used by the internal logger to record the Type of the
+            log message.
             </remarks>
         </member>
         <member name="T:log4net.Layout.RawLayoutConverter">
@@ -20441,6 +20768,16 @@
             </para>
             </remarks>
         </member>
+        <member name="M:log4net.Repository.Hierarchy.XmlHierarchyConfigurator.ActivatePendingAppenders">
+            <summary>
+            Activates the appenders parsed in this pass, in creation order.
+            </summary>
+        </member>
+        <member name="M:log4net.Repository.Hierarchy.XmlHierarchyConfigurator.DiscardAppender(log4net.Appender.IAppender)">
+            <summary>
+            Detaches <paramref name="appender"/> from everything this pass attached it to and closes it.
+            </summary>
+        </member>
         <member name="M:log4net.Repository.Hierarchy.XmlHierarchyConfigurator.FindAppenderByReference(System.Xml.XmlElement)">
             <summary>
             Parse appenders by IDREF.
@@ -20615,6 +20952,16 @@
         <member name="F:log4net.Repository.Hierarchy.XmlHierarchyConfigurator._appenderBag">
             <summary>
             key: appenderName, value: appender.
+            </summary>
+        </member>
+        <member name="F:log4net.Repository.Hierarchy.XmlHierarchyConfigurator._pendingActivations">
+            <summary>
+            Appenders parsed in this pass and not activated yet.
+            </summary>
+        </member>
+        <member name="F:log4net.Repository.Hierarchy.XmlHierarchyConfigurator._deferActivation">
+            <summary>
+            Set by <see cref="M:log4net.Repository.Hierarchy.XmlHierarchyConfigurator.Configure(System.Xml.XmlElement)"/> alone: defers activation in <see cref="M:log4net.Repository.Hierarchy.XmlHierarchyConfigurator.ParseAppender(System.Xml.XmlElement)"/>.
             </summary>
         </member>
         <member name="F:log4net.Repository.Hierarchy.XmlHierarchyConfigurator._declaringType">
@@ -21438,6 +21785,124 @@
             Used by the internal logger to record the Type of the
             log message.
             </remarks>
+        </member>
+        <member name="T:log4net.Util.BackgroundSender`1">
+            <summary>
+            Hands work to a single background thread so that an appender does not perform
+            slow I/O while it holds the appender lock.
+            </summary>
+            <typeparam name="T">The type of the queued work items.</typeparam>
+            <remarks>
+            <para>
+            An appender that sends over the network blocks the thread that made the logging call,
+            and every other thread logging to the same appender behind it, for as long as the sink
+            takes to answer. Queueing the work instead bounds that wait to the enqueue timeout.
+            </para>
+            <para>
+            The queue has a fixed capacity. Work is delivered in the order it was queued, by one
+            thread, so a send implementation does not need to be thread safe. Items that could not
+            be queued or sent are counted in <see cref="P:log4net.Util.BackgroundSender`1.DroppedItemCount"/>.
+            </para>
+            <para>
+            Public only because <c>log4net.Ext.Mail</c> is deliberately not strong named and so cannot be
+            a friend assembly. It is infrastructure, not part of the surface an application configures.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Util.BackgroundSender`1.#ctor(System.String,System.Int32,System.Action{`0,System.Threading.CancellationToken},System.Action{System.String,System.Exception})">
+            <summary>
+            Creates a queue and starts its background thread.
+            </summary>
+            <param name="name">Name of the owning appender, used in error messages.</param>
+            <param name="capacity">The maximum number of items the queue holds. Must be positive.</param>
+            <param name="send">
+            Delivers one item. Called on the background thread only. May throw: the exception is
+            reported and the item dropped. The token is cancelled once <see cref="M:log4net.Util.BackgroundSender`1.Close(System.Int32)"/> has run
+            out of time, so an implementation that can abort its I/O should pass it on.
+            </param>
+            <param name="reportError">Reports a message and its optional exception, typically to an error handler.</param>
+        </member>
+        <member name="P:log4net.Util.BackgroundSender`1.DroppedItemCount">
+            <summary>
+            The number of items that were not delivered, because the queue was full, closed or faulted,
+            or because sending them threw.
+            </summary>
+        </member>
+        <member name="P:log4net.Util.BackgroundSender`1.IsFaulted">
+            <summary>
+            Whether the background thread has stopped for good. Nothing more will be delivered.
+            </summary>
+        </member>
+        <member name="M:log4net.Util.BackgroundSender`1.TryEnqueue(`0,System.Int32)">
+            <summary>
+            Queues one item for delivery.
+            </summary>
+            <param name="item">The item to deliver.</param>
+            <param name="millisecondsTimeout">
+            How long to wait for room in a full queue. Zero returns immediately, which loses the item
+            rather than delaying the logging call.
+            </param>
+            <returns><see langword="true"/> if the item was queued, <see langword="false"/> if it was dropped.</returns>
+        </member>
+        <member name="M:log4net.Util.BackgroundSender`1.Flush(System.Int32)">
+            <summary>
+            Waits until everything queued before this call has been sent.
+            </summary>
+            <param name="millisecondsTimeout">The maximum time to wait.</param>
+            <returns>
+            <see langword="true"/> if the queue drained in time, <see langword="false"/> on timeout
+            or if the background thread is no longer running.
+            </returns>
+            <remarks>
+            <para>
+            A marker is placed at the end of the queue and awaited, so a caller is not held up by
+            items queued after it asked.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Util.BackgroundSender`1.Close(System.Int32)">
+            <summary>
+            Stops the queue, sending what is still in it until the time runs out.
+            </summary>
+            <param name="millisecondsTimeout">The maximum time to spend draining.</param>
+            <remarks>
+            <para>
+            Never throws. Once the time is up the send in flight is cancelled and the remaining items
+            are counted as dropped, so closing an appender cannot hang on an unresponsive sink.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Util.BackgroundSender`1.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:log4net.Util.BackgroundSender`1.Report(System.String,System.Exception)">
+            <summary>
+            Reports without ever throwing. An <see cref="T:System.Action`2"/> supplied by a caller may
+            throw, and on the pump thread that would be an unhandled exception.
+            </summary>
+        </member>
+        <member name="M:log4net.Util.BackgroundSender`1.ReleaseWaiters">
+            <summary>
+            Releases anyone waiting in <see cref="M:log4net.Util.BackgroundSender`1.Flush(System.Int32)"/> once the pump is gone, rather than
+            letting them wait out their timeout for a marker that will never be reached.
+            </summary>
+        </member>
+        <member name="M:log4net.Util.BackgroundSender`1.ReportQueueFull">
+            <summary>
+            A full or closed queue, unlike a failed send, which reports for itself.
+            </summary>
+        </member>
+        <member name="T:log4net.Util.BackgroundSender`1.Item">
+            <summary>
+            Either a payload or a flush marker: markers travel in the queue so that they observe
+            the order the items were queued in.
+            </summary>
+        </member>
+        <member name="M:log4net.Util.BackgroundSender`1.Item.#ctor(`0,System.Threading.Tasks.TaskCompletionSource{System.Boolean})">
+            <summary>
+            Either a payload or a flush marker: markers travel in the queue so that they observe
+            the order the items were queued in.
+            </summary>
         </member>
         <member name="T:log4net.Util.CallerAssembly">
             <summary>
@@ -23586,7 +24051,7 @@
         </member>
         <member name="T:log4net.Util.TwoArgAction`2">
             <summary>
-            Delegate type used for LogicalThreadContextStack's callbacks.
+            Delegate type for an action taking two arguments.
             </summary>
         </member>
         <member name="T:log4net.Util.LogicalThreadContextStack">
@@ -23606,13 +24071,12 @@
             <see cref="T:log4net.Util.LogicalThreadContextProperties"/>.
             </summary>
         </member>
-        <member name="F:log4net.Util.LogicalThreadContextStack._registerNew">
+        <member name="F:log4net.Util.LogicalThreadContextStack._owner">
             <summary>
-            The callback used to let the <see cref="T:log4net.Util.LogicalThreadContextStacks"/> register a
-            new instance of a <see cref="T:log4net.Util.LogicalThreadContextStack"/>.
+            The owning stacks.
             </summary>
         </member>
-        <member name="M:log4net.Util.LogicalThreadContextStack.#ctor(System.String,log4net.Util.TwoArgAction{System.String,log4net.Util.LogicalThreadContextStack})">
+        <member name="M:log4net.Util.LogicalThreadContextStack.#ctor(System.String,log4net.Util.LogicalThreadContextStacks)">
             <summary>
             Internal constructor
             </summary>
@@ -23832,6 +24296,16 @@
             Gets the named thread context stack
             </para>
             </remarks>
+        </member>
+        <member name="M:log4net.Util.LogicalThreadContextStacks.RegisterNew(System.String,log4net.Util.LogicalThreadContextStack)">
+            <summary>
+            Registers <paramref name="stack"/> under <paramref name="stackName"/> in the current flow.
+            </summary>
+        </member>
+        <member name="M:log4net.Util.LogicalThreadContextStacks.GetCurrent(System.String)">
+            <summary>
+            Gets the stack currently registered under <paramref name="stackName"/> in this flow.
+            </summary>
         </member>
         <member name="F:log4net.Util.LogicalThreadContextStacks._declaringType">
             <summary>
@@ -24317,7 +24791,7 @@
             </summary>
             <author>Jan Friedrich</author>
         </member>
-        <member name="M:log4net.Util.NativeMethods.FormatMessage(System.Int32,System.IntPtr@,System.Int32,System.Int32,System.String@,System.Int32,System.IntPtr)">
+        <member name="M:log4net.Util.NativeMethods.FormatMessage(System.Int32,System.IntPtr,System.Int32,System.Int32,System.IntPtr@,System.Int32,System.IntPtr)">
             <summary>
             Formats a message string.
             </summary>
@@ -24325,7 +24799,7 @@
             <param name="lpSource">Location of the message definition.</param>
             <param name="dwMessageId">Message identifier for the requested message.</param>
             <param name="dwLanguageId">Language identifier for the requested message.</param>
-            <param name="lpBuffer">If <paramref name="dwFlags" /> includes FORMAT_MESSAGE_ALLOCATE_BUFFER, the function allocates a buffer using the <c>LocalAlloc</c> function, and places the pointer to the buffer at the address specified in <paramref name="lpBuffer" />.</param>
+            <param name="lpBuffer">If <paramref name="dwFlags" /> includes FORMAT_MESSAGE_ALLOCATE_BUFFER, the function allocates a buffer using the <c>LocalAlloc</c> function and returns it here, so the caller has to release it with <see cref="M:log4net.Util.NativeMethods.LocalFree(System.IntPtr)" />.</param>
             <param name="nSize">If the FORMAT_MESSAGE_ALLOCATE_BUFFER flag is not set, this parameter specifies the maximum number of TCHARs that can be stored in the output buffer. If FORMAT_MESSAGE_ALLOCATE_BUFFER is set, this parameter specifies the minimum number of TCHARs to allocate for an output buffer.</param>
             <param name="arguments">Pointer to an array of values that are used as insert values in the formatted message.</param>
             <remarks>
@@ -24353,6 +24827,13 @@
             </para>
             </returns>
         </member>
+        <member name="M:log4net.Util.NativeMethods.LocalFree(System.IntPtr)">
+            <summary>
+            Frees a local memory object, as allocated by <see cref="M:log4net.Util.NativeMethods.FormatMessage(System.Int32,System.IntPtr,System.Int32,System.Int32,System.IntPtr@,System.Int32,System.IntPtr)"/>.
+            </summary>
+            <param name="memory">Handle to the object.</param>
+            <returns><see cref="F:System.IntPtr.Zero"/> if the object was freed.</returns>
+        </member>
         <member name="M:log4net.Util.NativeMethods.OutputDebugString(System.String)">
             <summary>
             Stub for OutputDebugString native method
@@ -24364,17 +24845,16 @@
             Open connection to system logger.
             </summary>
         </member>
-        <member name="M:log4net.Util.NativeMethods.syslog(System.Int32,System.String,System.String)">
+        <member name="M:log4net.Util.NativeMethods.syslog(System.Int32,System.String)">
             <summary>
             Generate a log message.
             </summary>
             <remarks>
             <para>
-            The libc syslog method takes a format string and a variable argument list similar
-            to the classic printf function. As this type of vararg list is not supported
-            by C# we need to specify the arguments explicitly. Here we have specified the
-            format string with a single message argument. The caller must set the format 
-            string to <c>"%s"</c>.
+            Only the two fixed parameters of the variadic libc function are declared, because a
+            variadic argument is passed differently from a fixed one on Apple arm64 and the callee then
+            reads the wrong slot. The caller passes the record as the format string and must therefore
+            double every <c>%</c> in it.
             </para>
             </remarks>
         </member>
@@ -26804,6 +27284,47 @@
             See <see cref="M:System.Collections.IEnumerable.GetEnumerator"/>
             </summary>
         </member>
+        <member name="T:log4net.Util.Redact">
+            <summary>
+            Keeps secrets out of the messages log4net writes about its own configuration.
+            </summary>
+        </member>
+        <member name="M:log4net.Util.Redact.ConnectionString(System.String)">
+            <summary>
+            Reduces a connection string to the keywords that identify the server.
+            </summary>
+            <param name="connectionString">The connection string to redact.</param>
+            <returns>The other values replaced, or <see cref="F:log4net.Util.Redact.RedactedValue"/> if it could not be parsed.</returns>
+            <remarks>
+            <para>
+            An allowlist, because hiding known secret keywords misses `Extended Properties`: it nests a
+            whole connection string that the parser returns as one opaque value.
+            </para>
+            </remarks>
+        </member>
+        <member name="M:log4net.Util.Redact.Value(System.String,System.Object)">
+            <summary>
+            Hides a configured value whose parameter name says it is a secret.
+            </summary>
+            <param name="name">The configured parameter name.</param>
+            <param name="value">The value about to be logged.</param>
+            <returns>The value, <see cref="F:log4net.Util.Redact.RedactedValue"/>, or a redacted connection string.</returns>
+        </member>
+        <member name="F:log4net.Util.Redact.DiagnosticKeywords">
+            <summary>
+            Keywords whose values are kept: they name the server and account, not the credentials.
+            </summary>
+        </member>
+        <member name="F:log4net.Util.Redact.SecretNames">
+            <summary>
+            Parameter name fragments that mark a value as a secret.
+            </summary>
+        </member>
+        <member name="F:log4net.Util.Redact.RedactedValue">
+            <summary>
+            Stands in for a value withheld from a diagnostic message.
+            </summary>
+        </member>
         <member name="T:log4net.Util.ReusableStringWriter">
             <summary>
             A <see cref="T:System.IO.StringWriter"/> that can be <see cref="M:log4net.Util.ReusableStringWriter.Reset(System.Int32,System.Int32)"/> and reused
@@ -26858,6 +27379,12 @@
             Is the mono runtime used
             </summary>
         </member>
+        <member name="P:log4net.Util.SystemInfo.IsWindows">
+            <summary>
+            Is the runtime on Windows
+            </summary>
+            <remarks>Not <c>RuntimeInformation.IsOSPlatform</c>, which throws below net471.</remarks>
+        </member>
         <member name="M:log4net.Util.SystemInfo.#cctor">
             <summary>
             Initialize default values for private static fields.
@@ -26867,6 +27394,11 @@
             Only static methods are exposed from this type.
             </para>
             </remarks>
+        </member>
+        <member name="M:log4net.Util.SystemInfo.IsAndroidCore">
+            <summary>
+            Decides whether this is Android, without starting a process.
+            </summary>
         </member>
         <member name="P:log4net.Util.SystemInfo.NewLine">
             <summary>
@@ -27185,10 +27717,12 @@
             <returns><see langword="true"/> if the configuration system itself is unavailable</returns>
             <remarks>
             <para>
-            The inner exceptions have to be walked, because Native AOT surfaces this as a
+            The inner exceptions have to be walked, because the runtime surfaces both cases as a
             <see cref="T:System.Configuration.ConfigurationErrorsException"/> - the very type a malformed file produces. What
-            distinguishes it is further down the chain: a <see cref="T:System.MissingMethodException"/> for
-            <c>ClientConfigurationHost</c>, whose constructor the trimmer removed.
+            distinguishes them is further down the chain: under Native AOT a
+            <see cref="T:System.MissingMethodException"/> for <c>ClientConfigurationHost</c>, whose constructor the
+            trimmer removed, and in a native process hosting the runtime a
+            <see cref="T:System.PlatformNotSupportedException"/> from <c>ClientConfigPaths</c>.
             </para>
             <para>
             An unrecognized failure is treated as a configuration file problem, which is the safer way
@@ -27805,7 +28339,7 @@
             with the mask string specified.
             </para>
             <para>
-            Supplementary characters (U+10000�U+10FFFF) encoded as valid UTF-16 surrogate
+            Supplementary characters (U+10000–U+10FFFF) encoded as valid UTF-16 surrogate
             pairs are preserved; only lone surrogates and other illegal code units are masked.
             </para>
             </remarks>

@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\proyectoClase\\Solution1\\",
+  "WorkspaceRootPath": "C:\\Users\\steve\\source\\repos\\PendoVan\\DisenioSoftLabo\\Solution1\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{F922E39D-C131-45E3-BB0F-37AADDFFB2A1}|MiBotica.SolPedido.LogicaNegocio\\MiBotica.SolPedido.LogicaNegocio.csproj|c:\\proyectoclase\\solution1\\mibotica.solpedido.logicanegocio\\core\\usuarioln.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{F922E39D-C131-45E3-BB0F-37AADDFFB2A1}|MiBotica.SolPedido.LogicaNegocio\\MiBotica.SolPedido.LogicaNegocio.csproj|C:\\Users\\steve\\source\\repos\\PendoVan\\DisenioSoftLabo\\Solution1\\mibotica.solpedido.logicanegocio\\core\\usuarioln.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{F922E39D-C131-45E3-BB0F-37AADDFFB2A1}|MiBotica.SolPedido.LogicaNegocio\\MiBotica.SolPedido.LogicaNegocio.csproj|solutionrelative:mibotica.solpedido.logicanegocio\\core\\usuarioln.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -20,13 +20,13 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "UsuarioLN.cs",
-              "DocumentMoniker": "C:\\proyectoClase\\Solution1\\MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
+              "DocumentMoniker": "C:\\Users\\steve\\source\\repos\\PendoVan\\DisenioSoftLabo\\Solution1\\MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
               "RelativeDocumentMoniker": "MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
-              "ToolTip": "C:\\proyectoClase\\Solution1\\MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
+              "ToolTip": "C:\\Users\\steve\\source\\repos\\PendoVan\\DisenioSoftLabo\\Solution1\\MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
               "RelativeToolTip": "MiBotica.SolPedido.LogicaNegocio\\Core\\UsuarioLN.cs",
-              "ViewState": "AgIAAA4AAAAAAAAAAAA2wBkAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAADwAAAAAAAAAAAAUwFkAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-09-25T21:57:44.335Z",
+              "WhenOpened": "2026-10-09T17:05:44.526Z",
               "EditorCaption": ""
             }
           ]
