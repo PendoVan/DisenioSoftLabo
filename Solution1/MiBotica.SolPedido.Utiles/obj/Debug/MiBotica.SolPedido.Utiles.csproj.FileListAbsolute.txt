@@ -28,3 +28,13 @@ C:\Users\steve\source\repos\PendoVan\DisenioSoftLabo\Solution1\MiBotica.SolPedid
 C:\Users\steve\source\repos\PendoVan\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.528A18B0.Up2Date
 C:\Users\steve\source\repos\PendoVan\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.dll
 C:\Users\steve\source\repos\PendoVan\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.pdb
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\MiBotica.SolPedido.Utiles.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\MiBotica.SolPedido.Utiles.pdb
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\log4net.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\log4net.pdb
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\log4net.xml
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.csproj.AssemblyReference.cache
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.csproj.CoreCompileInputs.cache
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.528A18B0.Up2Date
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.pdb

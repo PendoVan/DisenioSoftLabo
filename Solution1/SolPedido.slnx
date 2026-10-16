@@ -11,4 +11,5 @@
     <Project Path="MiBotica.SolPedido.Utiles/MiBotica.SolPedido.Utiles.csproj" Id="0b75fdd8-6727-43dd-8f00-7554fc37fe02" />
     <Project Path="MiBotica.SolPedido.UtilesWeb/MiBotica.SolPedido.UtilesWeb.csproj" Id="fdc71517-a7e0-44bc-b96b-77a7f2b060b6" />
   </Folder>
+  <Project Path="ApiUsuario/ApiUsuario.csproj" Id="a3b5c7d8-1234-4567-8901-abcdef123456" />
 </Solution>

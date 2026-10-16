@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -24,6 +24,16 @@ namespace MiBotica.SolPedido.Cliente.Web.Controllers
         {
             ViewBag.Message = "Your contact page.";
 
+            return View();
+        }
+
+        public ActionResult Error500()
+        {
+            return View();
+        }
+
+        public ActionResult PaginaNoEncontrada()
+        {
             return View();
         }
     }

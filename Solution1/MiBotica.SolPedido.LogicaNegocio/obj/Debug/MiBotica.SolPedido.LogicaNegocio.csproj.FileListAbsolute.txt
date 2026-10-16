@@ -68,3 +68,41 @@ C:\Users\steve\source\repos\PendoVan\DisenioSoftLabo\Solution1\MiBotica.SolPedid
 C:\Users\steve\source\repos\PendoVan\DisenioSoftLabo\Solution1\MiBotica.SolPedido.LogicaNegocio\obj\Debug\MiBotica.FAD9DCE7.Up2Date
 C:\Users\steve\source\repos\PendoVan\DisenioSoftLabo\Solution1\MiBotica.SolPedido.LogicaNegocio\obj\Debug\MiBotica.SolPedido.LogicaNegocio.dll
 C:\Users\steve\source\repos\PendoVan\DisenioSoftLabo\Solution1\MiBotica.SolPedido.LogicaNegocio\obj\Debug\MiBotica.SolPedido.LogicaNegocio.pdb
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.LogicaNegocio.dll.config
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.LogicaNegocio.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.LogicaNegocio.pdb
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\log4net.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.AccesoDatos.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.Entidades.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.Utiles.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\Microsoft.Web.Infrastructure.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.Helpers.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.Mvc.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.Razor.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.WebPages.Deployment.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.WebPages.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.WebPages.Razor.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.AccesoDatos.pdb
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.AccesoDatos.dll.config
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.Entidades.pdb
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.Entidades.dll.config
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\MiBotica.SolPedido.Utiles.pdb
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\log4net.pdb
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\log4net.xml
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.Helpers.xml
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.Mvc.xml
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.Razor.xml
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.WebPages.xml
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.WebPages.Deployment.xml
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\System.Web.WebPages.Razor.xml
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\es\System.Web.Helpers.resources.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\es\System.Web.Mvc.resources.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\es\System.Web.Razor.resources.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\es\System.Web.WebPages.resources.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\es\System.Web.WebPages.Deployment.resources.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\bin\Debug\es\System.Web.WebPages.Razor.resources.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\obj\Debug\MiBotica.SolPedido.LogicaNegocio.csproj.AssemblyReference.cache
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\obj\Debug\MiBotica.SolPedido.LogicaNegocio.csproj.CoreCompileInputs.cache
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\obj\Debug\MiBotica.FAD9DCE7.Up2Date
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\obj\Debug\MiBotica.SolPedido.LogicaNegocio.dll
+D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.LogicaNegocio\obj\Debug\MiBotica.SolPedido.LogicaNegocio.pdb

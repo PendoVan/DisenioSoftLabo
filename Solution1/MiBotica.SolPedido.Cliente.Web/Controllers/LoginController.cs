@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -102,6 +102,8 @@ namespace MiBotica.SolPedido.Cliente.Web.Controllers
         public ActionResult CerrarSesion()
         {
             FormsAuthentication.SignOut();
+            Session.Clear();
+            Session.Abandon();
             return RedirectToAction("Index", "Home");
         }
     }

@@ -1,0 +1,15 @@
+@{
+    ViewBag.Title = "Página No Encontrada";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="error-page">
+    <h2 class="headline text-yellow">404</h2>
+    <div class="error-content">
+        <h3><i class="fa fa-warning text-yellow"></i> ¡Ups! Página no encontrada.</h3>
+        <p>
+            No pudimos encontrar la página que buscas.
+            Puedes volver a la <a href="@Url.Action("Index", "Home")">página de inicio</a>.
+        </p>
+    </div>
+</div>
