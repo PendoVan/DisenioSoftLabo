@@ -38,3 +38,13 @@ D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\
 D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.528A18B0.Up2Date
 D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.dll
 D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.pdb
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\MiBotica.SolPedido.Utiles.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\MiBotica.SolPedido.Utiles.pdb
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\log4net.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\log4net.pdb
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\bin\Debug\log4net.xml
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.csproj.AssemblyReference.cache
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.csproj.CoreCompileInputs.cache
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.528A18B0.Up2Date
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Utiles\obj\Debug\MiBotica.SolPedido.Utiles.pdb

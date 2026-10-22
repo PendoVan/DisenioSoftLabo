@@ -86,3 +86,55 @@ D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\
 D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.AC7335A6.Up2Date
 D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.dll
 D:\Tareas_momentaneas\Ciclo 6\Diseño_Software\Proyecto_en git_grupal\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.pdb
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Entidades.dll.config
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Entidades.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Entidades.pdb
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\log4net.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Utiles.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\Microsoft.Web.Infrastructure.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Helpers.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Mvc.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Razor.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.Deployment.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.Razor.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Utiles.pdb
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\log4net.pdb
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\log4net.xml
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Helpers.xml
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Mvc.xml
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Razor.xml
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.xml
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.Deployment.xml
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.Razor.xml
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.Helpers.resources.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.Mvc.resources.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.Razor.resources.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.WebPages.resources.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.WebPages.Deployment.resources.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.WebPages.Razor.resources.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.csproj.AssemblyReference.cache
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.csproj.CoreCompileInputs.cache
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.AC7335A6.Up2Date
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.dll
+C:\Users\acf12\Documents\2-UNIVERSIDAD\6TO CICLO\5-DISEÑO DE SOFTWARE\LaboDiseñoSoftware\DisenioSoftLabo\Solution1\MiBotica.SolPedido.Entidades\obj\Debug\MiBotica.SolPedido.Entidades.pdb
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\MiBotica.SolPedido.Entidades.dll.config
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\Microsoft.Web.Infrastructure.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Helpers.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Mvc.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Razor.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.Deployment.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.Razor.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Helpers.xml
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Mvc.xml
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.Razor.xml
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.xml
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.Deployment.xml
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\System.Web.WebPages.Razor.xml
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.Helpers.resources.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.Mvc.resources.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.Razor.resources.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.WebPages.resources.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.WebPages.Deployment.resources.dll
+C:\ProyectoClase\Solution1\MiBotica.SolPedido.Entidades\bin\Debug\es\System.Web.WebPages.Razor.resources.dll

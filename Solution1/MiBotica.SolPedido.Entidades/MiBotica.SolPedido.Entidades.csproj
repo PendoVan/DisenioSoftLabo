@@ -69,6 +69,7 @@
   <ItemGroup>
     <Compile Include="Base\BaseLN.cs" />
     <Compile Include="Class1.cs" />
+    <Compile Include="Core\Clientes.cs" />
     <Compile Include="Core\Opcion.cs" />
     <Compile Include="Core\Usuario.cs" />
     <Compile Include="Filter\ExceptionFilterAtributes.cs" />
